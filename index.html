@@ -3,93 +3,88 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Nhập Giờ Rảnh</title>
+    <link rel="icon" type="image/png" href="q3logo.png" />
+    <title>Đăng nhập</title>
     <style>
-      table {
-        width: 100%;
-        border-collapse: collapse;
-      }
-      th,
-      td {
-        border: 1px solid black;
+      body {
         text-align: center;
+        font-family: Arial, sans-serif;
+      }
+      input {
         padding: 8px;
+        width: 250px;
+        margin: 10px 0;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
       }
-      th {
-        background-color: #f2f2f2;
-      }
-      textarea {
-        width: 90%;
-        height: 50px;
-        resize: none;
+      button {
+        padding: 10px 20px;
+        cursor: pointer;
       }
     </style>
   </head>
   <body>
-    <h2>Nhập Thời Gian Rảnh</h2>
-    <form id="scheduleForm">
-      <table>
-        <thead>
-          <tr>
-            <th>Buổi</th>
-            <th>Thứ 2 (10/3/2025)</th>
-            <th>Thứ 3 (11/3/2025)</th>
-            <th>Thứ 4 (12/3/2025)</th>
-            <th>Thứ 5 (13/3/2025)</th>
-            <th>Thứ 6 (14/3/2025)</th>
-            <th>Thứ 7 (15/3/2025)</th>
-            <th>Chủ Nhật (16/3/2025)</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Sáng (8h - 12h)</td>
-            <td><textarea></textarea></td>
-            <td><textarea></textarea></td>
-            <td><textarea></textarea></td>
-            <td><textarea></textarea></td>
-            <td><textarea></textarea></td>
-            <td><textarea></textarea></td>
-            <td><textarea></textarea></td>
-          </tr>
-          <tr>
-            <td>Chiều (12h - 17h)</td>
-            <td><textarea></textarea></td>
-            <td><textarea></textarea></td>
-            <td><textarea></textarea></td>
-            <td><textarea></textarea></td>
-            <td><textarea></textarea></td>
-            <td><textarea></textarea></td>
-            <td><textarea></textarea></td>
-          </tr>
-          <tr>
-            <td>Tối (17h - 23h)</td>
-            <td><textarea></textarea></td>
-            <td><textarea></textarea></td>
-            <td><textarea></textarea></td>
-            <td><textarea></textarea></td>
-            <td><textarea></textarea></td>
-            <td><textarea></textarea></td>
-            <td><textarea></textarea></td>
-          </tr>
-        </tbody>
-      </table>
-      <br />
-      <button type="button" onclick="submitSchedule()">Submit</button>
-    </form>
+    <h2>Vui lòng nhập email và mật khẩu để đăng nhập</h2>
+    <input
+      type="email"
+      id="emailInput"
+      placeholder="Nhập email của bạn"
+      required
+    />
+    <input
+      type="password"
+      id="passwordInput"
+      placeholder="Nhập mật khẩu"
+      required
+    />
+    <button onclick="login()">Đăng nhập</button>
 
     <script>
-      function submitSchedule() {
-        const tableData = [];
-        document.querySelectorAll("tbody tr").forEach((row) => {
-          const rowData = [];
-          row.querySelectorAll("textarea").forEach((textarea) => {
-            rowData.push(textarea.value.trim());
+      async function login() {
+        const email = document.getElementById("emailInput").value.trim();
+        const password = document.getElementById("passwordInput").value.trim();
+
+        if (email === "" || password === "") {
+          alert("Vui lòng nhập email và mật khẩu!");
+          return;
+        }
+        const GOOGLE_API_URL =
+          "https://script.google.com/macros/s/AKfycbxmzfrfln9353b2U9BtA8D0tVdvDg-y-_KP3Vem-79bcXuJON3krz8IBldtp_1EDQCd-Q/exec";
+
+        try {
+          const response = await fetch(GOOGLE_API_URL, {
+            redirect: "follow",
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({ type: "login", email, password }),
           });
-          tableData.push(rowData);
-        });
-        sessionStorage.setItem("scheduleData", JSON.stringify(tableData));
-        window.location.href = "confirm.html";
+
+          if (!response.ok) {
+            throw new Error("Server không phản hồi đúng!");
+          }
+
+          const result = await response.json();
+          const res = JSON.parse(result.message);
+          const status = res.status;
+
+          switch (status) {
+            case "wrong_password":
+              alert("Sai mật khẩu! Vui lòng thử lại.");
+              break;
+            case "email_not_found":
+              alert("Email chưa tồn tại trong hệ thống.");
+              break;
+            case "ok":
+              window.location.href = "user-info.html";
+              break;
+            default:
+              alert("Đã xảy ra lỗi, vui lòng thử lại.");
+              break;
+          }
+        } catch (error) {
+          console.error("Lỗi:", error);
+        }
       }
     </script>
   </body>

@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="q3logo.png" />
     <title>Xác Nhận Thời Gian Rảnh</title>
     <style>
       table {
@@ -73,19 +74,21 @@
       function goBack() {
         window.location.href = "index.html";
       }
-
       const GOOGLE_API_URL =
-        "https://script.google.com/macros/s/AKfycbw-LDaVqZztFmhdH8nhnQ78Yd49UV8fBQpFXjgpIatrd_fJR8574LJ3kZWmth1kiyV06A/exec";
+        "https://script.google.com/macros/s/AKfycbxmzfrfln9353b2U9BtA8D0tVdvDg-y-_KP3Vem-79bcXuJON3krz8IBldtp_1EDQCd-Q/exec";
 
       function submitToGoogleSheets() {
         fetch(GOOGLE_API_URL, {
+          redirect: "follow",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
           method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(scheduleData),
         })
           .then((response) => response.json())
-          .then((data) => alert("Dữ liệu đã được lưu!"))
+          .then((data) => {
+            console.log(" .then ~ data:", data);
+            alert("Dữ liệu đã được lưu!");
+          })
           .catch((error) => {
             console.log(" submitToGoogleSheets ~ error:", error);
           });
