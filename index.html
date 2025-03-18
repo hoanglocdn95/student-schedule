@@ -3,86 +3,156 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/png" href="q3logo.png" />
+    <link rel="icon" type="image/png" href="./assets/q3logo.png" />
     <title>Đăng nhập</title>
+    <link href="./libs/materialize.min.css" rel="stylesheet" />
     <style>
       body {
-        text-align: center;
-        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        height: 100vh;
+        background-color: #ff9800;
+        padding: 10px;
       }
-      input {
-        padding: 8px;
-        width: 250px;
-        margin: 10px 0;
-        display: block;
-        margin-left: auto;
-        margin-right: auto;
+      .container {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+        max-width: 450px;
+        height: 320px;
+        width: 100%;
+        margin-top: 60px;
       }
-      button {
-        padding: 10px 20px;
-        cursor: pointer;
+      .btn {
+        background-color: #ff9800;
+        width: 100%;
+      }
+      .loading-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+      .toast-container {
+        position: fixed;
+        top: 40px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 2000;
       }
     </style>
   </head>
   <body>
-    <h2>Vui lòng nhập email và mật khẩu để đăng nhập</h2>
-    <input
-      type="email"
-      id="emailInput"
-      placeholder="Nhập email của bạn"
-      required
-    />
-    <input
-      type="password"
-      id="passwordInput"
-      placeholder="Nhập mật khẩu"
-      required
-    />
-    <button onclick="login()">Đăng nhập</button>
+    <div class="container">
+      <h4 class="center">Đăng nhập</h4>
+      <div class="input-field">
+        <input type="email" id="emailInput" required />
+        <label for="emailInput">Nhập email của bạn</label>
+      </div>
+      <div class="input-field">
+        <input type="password" id="passwordInput" required />
+        <label for="passwordInput">Nhập mật khẩu</label>
+      </div>
+      <button class="btn waves-effect waves-light" onclick="login()">
+        Đăng nhập
+      </button>
+    </div>
 
+    <div class="loading-overlay" id="loadingOverlay">
+      <div class="preloader-wrapper big active">
+        <div class="spinner-layer spinner-orange-only">
+          <div class="circle-clipper left">
+            <div class="circle"></div>
+          </div>
+          <div class="gap-patch">
+            <div class="circle"></div>
+          </div>
+          <div class="circle-clipper right">
+            <div class="circle"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./libs/materialize.min.js"></script>
     <script>
       async function login() {
         const email = document.getElementById("emailInput").value.trim();
         const password = document.getElementById("passwordInput").value.trim();
+        const loadingOverlay = document.getElementById("loadingOverlay");
 
         if (email === "" || password === "") {
-          alert("Vui lòng nhập email và mật khẩu!");
+          M.toast({
+            html: "Vui lòng nhập email và mật khẩu!",
+            classes: "red",
+            displayLength: 2000,
+          });
           return;
         }
-        const GOOGLE_API_URL =
-          "https://script.google.com/macros/s/AKfycbxmzfrfln9353b2U9BtA8D0tVdvDg-y-_KP3Vem-79bcXuJON3krz8IBldtp_1EDQCd-Q/exec";
 
+        loadingOverlay.style.display = "flex";
+
+        const GOOGLE_API_URL =
+          "https://script.google.com/macros/s/AKfycbzHiV_trcI27tQNkpOIYbpvPduEjMwAjOLSWdBRPqx7o6Ln482NujaSwnii9bEz-w0i/exec";
         try {
           const response = await fetch(GOOGLE_API_URL, {
-            redirect: "follow",
             method: "POST",
+            redirect: "follow",
             headers: { "Content-Type": "text/plain;charset=utf-8" },
             body: JSON.stringify({ type: "login", email, password }),
           });
-
-          if (!response.ok) {
-            throw new Error("Server không phản hồi đúng!");
-          }
 
           const result = await response.json();
           const res = JSON.parse(result.message);
           const status = res.status;
 
+          loadingOverlay.style.display = "none";
+
           switch (status) {
             case "wrong_password":
-              alert("Sai mật khẩu! Vui lòng thử lại.");
+              M.toast({
+                html: "Sai mật khẩu!",
+                classes: "red",
+                displayLength: 2000,
+              });
               break;
             case "email_not_found":
-              alert("Email chưa tồn tại trong hệ thống.");
+              M.toast({
+                html: "Email không tồn tại trong hệ thống",
+                classes: "red",
+                displayLength: 2000,
+              });
               break;
             case "ok":
-              window.location.href = "user-info.html";
+              M.toast({
+                html: "Đăng nhập thành công!",
+                classes: "green",
+                displayLength: 2000,
+              });
+              sessionStorage.setItem("user_email", email);
+              setTimeout(() => (window.location.href = "user.html"), 1000);
               break;
             default:
-              alert("Đã xảy ra lỗi, vui lòng thử lại.");
-              break;
+              M.toast({
+                html: "Đã xảy ra lỗi, vui lòng thử lại",
+                classes: "red",
+                displayLength: 2000,
+              });
           }
         } catch (error) {
+          loadingOverlay.style.display = "none";
+          M.toast({
+            html: "Lỗi kết nối!",
+            classes: "red",
+            displayLength: 2000,
+          });
           console.error("Lỗi:", error);
         }
       }

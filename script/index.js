@@ -20,9 +20,7 @@ function doPost(e) {
   }
 }
 
-function doGet(e) {
-  const email = e.parameter.email;
-  logToSheet("Email: " + email);
+function getUser(email) {
   if (!email) {
     return ContentService.createTextOutput(
       JSON.stringify({ success: false, error: "Missing email parameter" })
@@ -52,7 +50,6 @@ function doGet(e) {
       const userData = {};
       headers.forEach((_, index) => {
         if (userKeys[index]) {
-          logToSheet(`${userKeys[index]}: ${data[i][index]}`);
           userData[userKeys[index]] = data[i][index];
         }
       });
@@ -65,6 +62,72 @@ function doGet(e) {
 
   return ContentService.createTextOutput(
     JSON.stringify({ success: false, message: "User not found" })
+  ).setMimeType(ContentService.MimeType.JSON);
+}
+
+function getCalendar() {
+  var currentDate = new Date();
+
+  var monday = new Date(currentDate);
+  monday.setDate(
+    currentDate.getDate() -
+      (currentDate.getDay() === 0 ? 6 : currentDate.getDay() - 1)
+  );
+
+  var sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+
+  var formatDate = (date) =>
+    Utilities.formatDate(
+      date,
+      Session.getScriptTimeZone() || "GMT",
+      "dd/MM/yyyy"
+    );
+  var sheetName = `${formatDate(monday)} - ${formatDate(sunday)}`;
+
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+
+  if (!sheet) {
+    return ContentService.createTextOutput(
+      JSON.stringify({ success: false, message: "Sheet not found" })
+    ).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  var startRow = 2;
+  var startColumn = 2;
+
+  var data = sheet.getDataRange().getValues();
+  if (data.length < startRow || data[0].length < startColumn) {
+    return ContentService.createTextOutput(
+      JSON.stringify({ success: false, message: "Invalid sheet structure" })
+    ).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  var numRows = data.length - (startRow - 1); // Giới hạn số dòng hợp lệ
+  var numCols = data[0].length - (startColumn - 1);
+
+  var existingData = sheet
+    .getRange(startRow, startColumn, numRows, numCols)
+    .getValues();
+
+  return ContentService.createTextOutput(
+    JSON.stringify({ success: true, data: existingData })
+  ).setMimeType(ContentService.MimeType.JSON);
+}
+
+function doGet(e) {
+  const type = e.parameter.type;
+
+  if (type === "get_calendar") {
+    return getCalendar();
+  }
+
+  if (type === "get_user") {
+    return getUser(e.parameter.email);
+  }
+
+  return ContentService.createTextOutput(
+    JSON.stringify({ success: false, message: "Missing type in parameter" })
   ).setMimeType(ContentService.MimeType.JSON);
 }
 
@@ -171,7 +234,41 @@ function handleLogin(requestData) {
   return sendErrorResponse("email_not_found");
 }
 
-// ✅ Hàm xử lý dữ liệu "calendar"
+/**
+ * Tách thông tin từ dữ liệu mới.
+ */
+function extractUserData(dataString) {
+  var match = dataString.match(/^(.+?) - (.+?) \((.+)\)$/);
+  if (match) {
+    return [match[1].trim(), match[2].trim(), match[3].trim()];
+  }
+  return ["Unknown", "Unknown", ""];
+}
+
+/**
+ * Cập nhật dữ liệu trong ô dựa trên email.
+ */
+function updateCellData(cellContent, newUser, newEmail, newTimes) {
+  var lines = cellContent.split("\n");
+  var updated = false;
+
+  var newLines = lines.map((line) => {
+    var [existingUser, existingEmail, existingTimes] = extractUserData(line);
+
+    if (existingEmail === newEmail) {
+      updated = true;
+      return `${existingUser} - ${existingEmail} (${newTimes})`;
+    }
+    return line;
+  });
+
+  if (!updated) {
+    newLines.push(`${newUser} - ${newEmail} (${newTimes})`);
+  }
+
+  return newLines.join("\n");
+}
+
 function handleCalendarType(data) {
   var currentDate = new Date();
   var monday = new Date(currentDate);
@@ -202,10 +299,22 @@ function handleCalendarType(data) {
 
   for (var i = 0; i < numRows; i++) {
     for (var j = 0; j < numCols; j++) {
-      if (existingData[i][j]) {
-        existingData[i][j] += ", " + data[i][j];
+      var newData = data[i][j].trim();
+      if (!newData) continue;
+
+      var [newUser, newEmail, newTimes] = extractUserData(newData);
+      var cellContent = existingData[i][j].trim();
+
+      if (cellContent) {
+        var updatedContent = updateCellData(
+          cellContent,
+          newUser,
+          newEmail,
+          newTimes
+        );
+        existingData[i][j] = updatedContent;
       } else {
-        existingData[i][j] = data[i][j];
+        existingData[i][j] = `${newUser} - ${newEmail} (${newTimes})`;
       }
     }
   }
@@ -226,4 +335,45 @@ function logToSheet(message) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var logSheet = ss.getSheetByName("Logs") || ss.insertSheet("Logs");
   logSheet.appendRow([new Date(), message]);
+}
+
+function createSheetWithHeaders(ss, sheetName, monday, sunday) {
+  var sheet = ss.insertSheet(sheetName);
+
+  // Danh sách tên ngày trong tuần
+  var dayNames = [
+    "Chủ Nhật",
+    "Thứ 2",
+    "Thứ 3",
+    "Thứ 4",
+    "Thứ 5",
+    "Thứ 6",
+    "Thứ 7",
+  ];
+
+  // Tạo tiêu đề cột
+  var headers = ["Buổi"];
+  for (var d = new Date(monday); d <= sunday; d.setDate(d.getDate() + 1)) {
+    var dayOfWeek = dayNames[d.getDay()]; // Lấy tên thứ trong tuần
+    var formattedDate = Utilities.formatDate(
+      new Date(d),
+      Session.getScriptTimeZone(),
+      "dd/MM/yyyy"
+    );
+    headers.push(`${dayOfWeek} (${formattedDate})`);
+  }
+
+  sheet.getRange(1, 1, 1, headers.length).setValues([headers]); // Ghi header hàng 1
+
+  // Tạo hàng "Buổi sáng", "Buổi chiều", "Buổi tối"
+  var periods = [
+    "Sáng (8:00 - 12:00)*",
+    "Chiều (12:00 - 17:00)",
+    "Tối (17:00 - 23:00)",
+  ];
+  for (var i = 0; i < periods.length; i++) {
+    sheet.getRange(i + 2, 1).setValue(periods[i]); // Ghi header buổi sáng, chiều, tối
+  }
+
+  return sheet;
 }
