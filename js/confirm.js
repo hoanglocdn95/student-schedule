@@ -1,5 +1,5 @@
 const GOOGLE_API_URL =
-  "https://script.google.com/macros/s/AKfycbzHiV_trcI27tQNkpOIYbpvPduEjMwAjOLSWdBRPqx7o6Ln482NujaSwnii9bEz-w0i/exec";
+  "https://script.google.com/macros/s/AKfycby-4maO6TgE0h5X6WfuL0nM2KygFp1w2U1paOe6lZMhMABS9peKi3zOatkkB3FymctM/exec";
 
 const scheduleData = JSON.parse(sessionStorage.getItem("scheduleData"));
 const useInfo = JSON.parse(sessionStorage.getItem("user_info"));
@@ -96,7 +96,4 @@ document.addEventListener("DOMContentLoaded", function () {
   if (!sessionStorage.getItem("user_email")) {
     window.location.href = "index.html";
   }
-});
-window.addEventListener("beforeunload", function () {
-  // sessionStorage.clear();
 });

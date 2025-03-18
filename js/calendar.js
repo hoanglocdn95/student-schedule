@@ -1,5 +1,5 @@
 const GOOGLE_API_URL =
-  "https://script.google.com/macros/s/AKfycbwNn0TDYzOhVcnJ4IYqkLBoJBBH1OKRwt_vXISTJwUHWC_LAynVSf9z_9zGvq3KvcQ2bA/exec";
+  "https://script.google.com/macros/s/AKfycby-4maO6TgE0h5X6WfuL0nM2KygFp1w2U1paOe6lZMhMABS9peKi3zOatkkB3FymctM/exec";
 
 function generateHeaders() {
   let today = new Date();
@@ -171,6 +171,7 @@ async function initTableData() {
     });
 
     const res = await response.json();
+    loadingOverlay.style.display = "none";
     const data = res.data;
 
     if (!data || !Array.isArray(data) || data.length === 0) {
@@ -201,7 +202,6 @@ async function initTableData() {
         }
       }
     }
-    loadingOverlay.style.display = "none";
   } catch (error) {
     console.error("Lỗi khi lấy dữ liệu:", error);
     loadingOverlay.style.display = "none";
@@ -212,7 +212,4 @@ document.addEventListener("DOMContentLoaded", function () {
   if (!sessionStorage.getItem("user_email")) {
     window.location.href = "index.html";
   }
-});
-window.addEventListener("beforeunload", function () {
-  // sessionStorage.clear();
 });

@@ -363,7 +363,13 @@ function createSheetWithHeaders(ss, sheetName, monday, sunday) {
     headers.push(`${dayOfWeek} (${formattedDate})`);
   }
 
-  sheet.getRange(1, 1, 1, headers.length).setValues([headers]); // Ghi header hàng 1
+  // Ghi tiêu đề vào hàng đầu tiên
+  var headerRange = sheet.getRange(1, 1, 1, headers.length);
+  headerRange.setValues([headers]);
+
+  // Định dạng header: Chữ in đậm, căn giữa, màu nền #f2f2f2 (trừ cột đầu)
+  headerRange.setFontWeight("bold").setHorizontalAlignment("center");
+  headerRange.offset(0, 1).setBackground("#f2f2f2"); // Đổi màu header (trừ cột đầu)
 
   // Tạo hàng "Buổi sáng", "Buổi chiều", "Buổi tối"
   var periods = [
@@ -372,8 +378,31 @@ function createSheetWithHeaders(ss, sheetName, monday, sunday) {
     "Tối (17:00 - 23:00)",
   ];
   for (var i = 0; i < periods.length; i++) {
-    sheet.getRange(i + 2, 1).setValue(periods[i]); // Ghi header buổi sáng, chiều, tối
+    sheet.getRange(i + 2, 1).setValue(periods[i]);
   }
+
+  // Định dạng cột đầu tiên: In đậm, căn giữa, nền #07bdd0
+  var firstColumnRange = sheet.getRange(1, 1, periods.length + 1, 1);
+  firstColumnRange
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground("#07bdd0");
+
+  // Định dạng viền cho toàn bộ bảng
+  var tableRange = sheet.getRange(1, 1, periods.length + 1, headers.length);
+  tableRange.setBorder(true, true, true, true, true, true);
+
+  // Điều chỉnh độ rộng cột tự động, giới hạn tối đa 300px
+  for (var col = 1; col <= headers.length; col++) {
+    sheet.autoResizeColumn(col);
+    var width = sheet.getColumnWidth(col);
+    if (width > 300) {
+      sheet.setColumnWidth(col, 600);
+    }
+  }
+
+  // Cho phép nội dung trong ô xuống hàng
+  tableRange.setWrap(true);
 
   return sheet;
 }
