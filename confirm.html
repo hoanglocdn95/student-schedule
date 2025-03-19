@@ -12,7 +12,7 @@
         width: fit-content;
       }
       .calendar-container {
-        background-color: #ff9800;
+        background-color: #faf2eb;
         height: 100%;
         min-height: 100vh;
       }
@@ -89,14 +89,52 @@
       .guide p {
         font-size: 16px;
       }
+
+      .nav-bar {
+        position: fixed;
+        top: 0px;
+        left: 0px;
+        z-index: 10;
+      }
+      .nav-bar a {
+        font-size: 20px;
+      }
     </style>
   </head>
   <body>
+    <nav class="nav-bar" style="background-color: #ff9800">
+      <div
+        class="nav-wrapper"
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        "
+      >
+        <ul class="left">
+          <li>
+            <a href="user.html">User</a>
+          </li>
+          <li class="active">
+            <a>Calendar</a>
+          </li>
+        </ul>
+        <button
+          class="btn-small cyan waves-effect waves-light"
+          style="margin-right: 16px; border-radius: 4px"
+          onclick="logout()"
+        >
+          Log out
+        </button>
+      </div>
+    </nav>
     <div class="calendar-container">
-      <h4 class="title" style="color: #fff">Xác Nhận Thời Gian Rảnh</h4>
+      <h4 class="title" style="color: #ff9800; margin-top: 60px">
+        Xác Nhận Thời Gian Rảnh
+      </h4>
       <div class="guide">
-        <p>Nếu bạn đồng ý với thời gian nhập vào, hãy nhấn SEND</p>
-        <p>Nếu muốn trở lại chỉnh sửa, hãy nhấn CANCEL</p>
+        <p>Nếu bạn đồng ý với thời gian nhập vào, hãy nhấn <b>YES</b></p>
+        <p>Nếu muốn trở lại chỉnh sửa, hãy nhấn <b>CANCEL</b></p>
       </div>
       <div class="table-container">
         <table id="confirmTable">
@@ -124,7 +162,7 @@
         </button>
         <button
           type="button"
-          class="btn-floating btn-large red pulse"
+          class="btn-floating btn-large red"
           onclick="goBack()"
           style="
             margin-right: 20px;

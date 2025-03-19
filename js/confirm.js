@@ -59,7 +59,7 @@ function submitToGoogleSheets() {
       loadingOverlay.style.display = "none";
       M.toast({ html: "Dữ liệu đã được lưu!", classes: "green darken-1" });
       setTimeout(() => {
-        window.location.href = "calendar.html";
+        window.location.href = "thanks.html";
       }, 2000);
     })
     .catch((error) => {
@@ -95,5 +95,8 @@ window.onload = function () {
 document.addEventListener("DOMContentLoaded", function () {
   if (!sessionStorage.getItem("user_email")) {
     window.location.href = "index.html";
+  }
+  if (!sessionStorage.getItem("user_info")) {
+    window.location.href = "user.html";
   }
 });

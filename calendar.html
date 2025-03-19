@@ -12,7 +12,7 @@
         width: fit-content;
       }
       .calendar-container {
-        background-color: #ff9800;
+        background-color: #faf2eb;
         height: 100%;
         min-height: 100vh;
       }
@@ -89,14 +89,52 @@
       .guide p {
         font-size: 16px;
       }
+
+      .nav-bar {
+        position: fixed;
+        top: 0px;
+        left: 0px;
+        z-index: 10;
+      }
+      .nav-bar a {
+        font-size: 20px;
+      }
     </style>
   </head>
   <body>
+    <nav class="nav-bar" style="background-color: #ff9800">
+      <div
+        class="nav-wrapper"
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        "
+      >
+        <ul class="left">
+          <li>
+            <a href="user.html">User</a>
+          </li>
+          <li class="active">
+            <a>Calendar</a>
+          </li>
+        </ul>
+        <button
+          class="btn-small cyan waves-effect waves-light"
+          style="margin-right: 16px; border-radius: 4px"
+          onclick="logout()"
+        >
+          Log out
+        </button>
+      </div>
+    </nav>
     <div class="calendar-container">
-      <h4 class="title" style="color: #fff">Nhập Thời Gian Rảnh</h4>
+      <h4 class="title" style="color: #ff9800; margin-top: 60px">
+        Nhập Thời Gian Rảnh
+      </h4>
       <div class="guide">
         <p>Điền thời gian rảnh vào bảng theo format:</p>
-        <p style="margin-left: 12px; color: #fff; font-weight: bold">
+        <p style="margin-left: 12px; color: #ff9800; font-weight: bold">
           (Từ) Giờ:phút - (Đến) Giờ:phút
         </p>
         <p>
@@ -143,7 +181,6 @@
         </div>
       </div>
     </div>
-    <!-- Materialize JS -->
     <script src="./libs/materialize.min.js"></script>
     <script src="./js/calendar.js"></script>
   </body>

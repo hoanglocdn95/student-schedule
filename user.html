@@ -9,11 +9,11 @@
     <!-- Custom Styles -->
     <style>
       body {
-        background-color: #ff9800;
+        background-color: #faf2eb;
       }
       .container {
         max-width: 600px;
-        margin-top: 50px;
+        margin-top: 90px;
       }
       .card {
         padding: 20px;
@@ -65,9 +65,42 @@
         transform: translateX(-50%);
         z-index: 2000;
       }
+      .nav-bar {
+        position: fixed;
+        top: 0px;
+        left: 0px;
+        z-index: 10;
+      }
+      .nav-bar a {
+        font-size: 20px;
+      }
     </style>
   </head>
   <body class="container">
+    <nav class="nav-bar" style="background-color: #ff9800">
+      <div
+        class="nav-wrapper"
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        "
+      >
+        <ul class="left">
+          <li class="active"><a>User</a></li>
+          <li id="goCalendar" style="display: none">
+            <a href="calendar.html">Calendar</a>
+          </li>
+        </ul>
+        <button
+          class="btn-small cyan waves-effect waves-light"
+          style="margin-right: 16px; border-radius: 4px"
+          onclick="logout()"
+        >
+          Log out
+        </button>
+      </div>
+    </nav>
     <div class="card">
       <h4 class="center-align" style="color: #ff9800">
         Nhập thông tin cá nhân
@@ -144,13 +177,6 @@
 
         <div class="center">
           <button type="submit" class="btn btn-primary">Save & Next</button>
-          <!-- <button
-            type="button"
-            class="btn btn-secondary"
-            onclick="nextWithoutUpdate()"
-          >
-            Next without save
-          </button> -->
         </div>
       </form>
     </div>

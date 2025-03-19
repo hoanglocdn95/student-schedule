@@ -59,9 +59,13 @@ function validateScheduleData() {
     textarea.classList.remove("error");
   });
 
+  let isEmptyCalendar = true;
+
   document.querySelectorAll("tbody tr").forEach((row, rowIndex) => {
     row.querySelectorAll("textarea").forEach((textarea, colIndex) => {
       if (textarea.value.trim() !== "") {
+        if (isEmptyCalendar) isEmptyCalendar = false;
+
         const values = textarea.value.split(",").map((v) => v.trim());
         for (const value of values) {
           const match = value.match(timeRangeRegex);
@@ -131,6 +135,12 @@ function validateScheduleData() {
     // M.toast({ html: errorContainer, classes: "red darken-1" });
     return false;
   }
+
+  if (isEmptyCalendar) {
+    errorContainer.textContent = "Bạn quên điền thời gian rảnh rồi";
+    return false;
+  }
+
   return true;
 }
 
@@ -153,8 +163,7 @@ function submitSchedule() {
 }
 
 async function initTableData() {
-  const useInfo = JSON.parse(sessionStorage.getItem("user_info"));
-  const email = useInfo.email;
+  const email = JSON.parse(sessionStorage.getItem("user_email"));
   const loadingOverlay = document.getElementById("loadingOverlay");
   loadingOverlay.style.display = "flex";
 
@@ -211,5 +220,8 @@ async function initTableData() {
 document.addEventListener("DOMContentLoaded", function () {
   if (!sessionStorage.getItem("user_email")) {
     window.location.href = "index.html";
+  }
+  if (!sessionStorage.getItem("user_info")) {
+    window.location.href = "user.html";
   }
 });

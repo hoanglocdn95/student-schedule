@@ -91,25 +91,40 @@ async function fetchUserData(email) {
     );
     const data = await response.json();
     if (data.success && data.user) {
-      if (data.user.pteExamDate) {
-        const dateObj = new Date(data.user.pteExamDate);
+      const {
+        name,
+        pteExamDate,
+        notes,
+        examBooked,
+        timezone,
+        minHoursPerWeek,
+        maxHoursPerWeek,
+        minHoursPerSession,
+        maxHoursPerSession,
+      } = data.user;
+
+      if (pteExamDate) {
+        console.log(" fetchUserData ~ pteExamDate:", pteExamDate);
+        const dateObj = new Date(pteExamDate);
         const formattedDate = dateObj.toISOString().split("T")[0];
         document.getElementById("pteExamDate").value = formattedDate;
       }
 
-      document.getElementById("name").value = data.user.name || "";
-      document.getElementById("timezone").value = data.user.timezone || "";
-      document.getElementById("examBooked").checked =
-        data.user.examBooked === "Đã book";
-      document.getElementById("notes").value = data.user.notes || "";
-      document.getElementById("minHoursPerWeek").value =
-        data.user.minHoursPerWeek || "";
-      document.getElementById("maxHoursPerWeek").value =
-        data.user.maxHoursPerWeek || "";
+      if (name && timezone) {
+        document.getElementById("goCalendar").style.display = "list-item";
+        sessionStorage.setItem("user_info", JSON.stringify(data.user));
+      }
+
+      if (data) document.getElementById("name").value = name || "";
+      document.getElementById("timezone").value = timezone || "";
+      document.getElementById("examBooked").checked = examBooked === "Đã book";
+      document.getElementById("notes").value = notes || "";
+      document.getElementById("minHoursPerWeek").value = minHoursPerWeek || "";
+      document.getElementById("maxHoursPerWeek").value = maxHoursPerWeek || "";
       document.getElementById("minHoursPerSession").value =
-        data.user.minHoursPerSession || "";
+        minHoursPerSession || "";
       document.getElementById("maxHoursPerSession").value =
-        data.user.maxHoursPerSession || "";
+        maxHoursPerSession || "";
     }
     loadingOverlay.style.display = "none";
   } catch (error) {
@@ -126,3 +141,8 @@ document.addEventListener("DOMContentLoaded", function () {
     window.location.href = "index.html";
   }
 });
+
+function logout() {
+  sessionStorage.clear();
+  window.location.href = "index.html";
+}
