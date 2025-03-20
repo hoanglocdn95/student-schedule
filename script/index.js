@@ -42,11 +42,10 @@ function getUser(email) {
     8: "maxHoursPerWeek",
     9: "minHoursPerSession",
     10: "maxHoursPerSession",
-    10: "maxHoursPerSession",
   };
 
   for (let i = 1; i < data.length; i++) {
-    if (data[i][2] === email) {
+    if (data[i][2] && data[i][2] === email) {
       const userData = {};
       headers.forEach((_, index) => {
         if (userKeys[index]) {
@@ -97,7 +96,7 @@ function getCalendar() {
   var startColumn = 2;
 
   var data = sheet.getDataRange().getValues();
-  if (data.length < startRow || data[0].length < startColumn) {
+  if (data && (data.length < startRow || data[0].length < startColumn)) {
     return ContentService.createTextOutput(
       JSON.stringify({ success: false, message: "Invalid sheet structure" })
     ).setMimeType(ContentService.MimeType.JSON);
@@ -224,7 +223,7 @@ function handleLogin(requestData) {
     var storedEmail = userData[i][0];
     var storedPassword = userData[i][9];
 
-    if (storedEmail === email) {
+    if (storedEmail && storedEmail === email) {
       return storedPassword.toString() === password.toString()
         ? sendSuccessResponse()
         : sendErrorResponse("wrong_password");
@@ -270,18 +269,29 @@ function updateCellData(cellContent, newUser, newEmail, newTimes) {
 }
 
 function handleCalendarType(data) {
+  const { scheduledData, timezone } = data;
+
   var currentDate = new Date();
+  let dayOfWeek = currentDate.getDay();
   var monday = new Date(currentDate);
   monday.setDate(
     currentDate.getDate() -
       (currentDate.getDay() === 0 ? 6 : currentDate.getDay() - 1)
   );
+
+  if (dayOfWeek === 6 || dayOfWeek === 0) {
+    monday.setDate(monday.getDate() + 7);
+  }
+
   var sunday = new Date(monday);
   sunday.setDate(monday.getDate() + 6);
 
   var formatDate = (date) =>
     Utilities.formatDate(date, Session.getScriptTimeZone(), "dd/MM/yyyy");
   var sheetName = `${formatDate(monday)} - ${formatDate(sunday)}`;
+  var sheetNameWithTimezone = `${formatDate(monday)} - ${formatDate(
+    sunday
+  )} - ${timezone}`;
 
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet =
@@ -289,42 +299,18 @@ function handleCalendarType(data) {
     createSheetWithHeaders(ss, sheetName, monday, sunday);
 
   // filter Timezone from data
-  // createSheetWithHeadersWithTimezone(ss, sheetName, monday, sunday);
+  var sheetWithTimezone =
+    ss.getSheetByName(sheetNameWithTimezone) ||
+    createSheetWithHeadersWithTimezone(
+      ss,
+      sheetNameWithTimezone,
+      monday,
+      sunday,
+      timezone
+    );
 
-  var startRow = 2;
-  var startColumn = 2;
-  var numRows = data.length;
-  var numCols = data[0].length;
-
-  var existingData = sheet
-    .getRange(startRow, startColumn, numRows, numCols)
-    .getValues();
-
-  for (var i = 0; i < numRows; i++) {
-    for (var j = 0; j < numCols; j++) {
-      var newData = data[i][j].trim();
-      if (!newData) continue;
-
-      var [newUser, newEmail, newTimes] = extractUserData(newData);
-      var cellContent = existingData[i][j].trim();
-
-      if (cellContent) {
-        var updatedContent = updateCellData(
-          cellContent,
-          newUser,
-          newEmail,
-          newTimes
-        );
-        existingData[i][j] = updatedContent;
-      } else {
-        existingData[i][j] = `${newUser} - ${newEmail} (${newTimes})`;
-      }
-    }
-  }
-
-  sheet
-    .getRange(startRow, startColumn, numRows, numCols)
-    .setValues(existingData);
+  generateSheetBody(2, 2, scheduledData, sheet);
+  generateSheetBody(4, 2, scheduledData, sheetWithTimezone);
 
   return sendSuccessResponse();
 }
@@ -410,10 +396,15 @@ function createSheetWithHeaders(ss, sheetName, monday, sunday) {
   return sheet;
 }
 
-function createSheetWithHeadersWithTimezone(ss, sheetName, monday, sunday) {
+function createSheetWithHeadersWithTimezone(
+  ss,
+  sheetName,
+  monday,
+  sunday,
+  timezone
+) {
   var sheet = ss.insertSheet(sheetName);
 
-  // Danh sách tên ngày trong tuần
   var dayNames = [
     "Chủ Nhật",
     "Thứ 2",
@@ -424,11 +415,10 @@ function createSheetWithHeadersWithTimezone(ss, sheetName, monday, sunday) {
     "Thứ 7",
   ];
 
-  // Gộp 3 cột A, B, C hàng đầu tiên và đặt chữ "TimeZone"
   var titleRange = sheet.getRange(1, 1, 1, 3);
   titleRange.merge();
   titleRange
-    .setValue("TimeZone")
+    .setValue(timezone)
     .setFontWeight("bold")
     .setFontSize(20)
     .setHorizontalAlignment("center")
@@ -496,4 +486,39 @@ function createSheetWithHeadersWithTimezone(ss, sheetName, monday, sunday) {
   sheet.getDataRange().setVerticalAlignment("middle");
 
   return sheet;
+}
+
+function generateSheetBody(startRow, startColumn, sheetData, currentSheet) {
+  var numRows = sheetData.length;
+  var numCols = sheetData[0].length;
+
+  var existingData = sheet
+    .getRange(startRow, startColumn, numRows, numCols)
+    .getValues();
+
+  for (var i = 0; i < numRows; i++) {
+    for (var j = 0; j < numCols; j++) {
+      const newData = sheetData[i][j].trim();
+      if (!newData) continue;
+
+      const [newUser, newEmail, newTimes] = extractUserData(newData);
+      const cellContent = existingData[i][j].trim();
+
+      if (cellContent) {
+        var updatedContent = updateCellData(
+          cellContent,
+          newUser,
+          newEmail,
+          newTimes
+        );
+        existingData[i][j] = updatedContent;
+      } else {
+        existingData[i][j] = `${newUser} - ${newEmail} (${newTimes})`;
+      }
+    }
+  }
+
+  currentSheet
+    .getRange(startRow, startColumn, numRows, numCols)
+    .setValues(existingData);
 }

@@ -1,20 +1,25 @@
 const GOOGLE_API_URL =
-  "https://script.google.com/macros/s/AKfycby-4maO6TgE0h5X6WfuL0nM2KygFp1w2U1paOe6lZMhMABS9peKi3zOatkkB3FymctM/exec";
+  "https://script.google.com/macros/s/AKfycbxJToTpR-X7QIErdwIeleZUFe0CjNkn_y97SMfoBb3ErSLfuS5aVNRA_E1nAHAyTUfg/exec";
 
 function generateHeaders() {
   let today = new Date();
   let dayOfWeek = today.getDay();
   let monday = new Date(today);
   monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+
+  if (dayOfWeek === 6 || dayOfWeek === 0) {
+    monday.setDate(monday.getDate() + 7);
+  }
+
   let sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
+  sunday.setDate(monday.getDate() + 6); // Tìm ngày Chủ Nhật
 
   let headerRow = document.getElementById("table-header");
 
   for (let d = new Date(monday); d <= sunday; d.setDate(d.getDate() + 1)) {
     let th = document.createElement("th");
-    th.textContent = `Thứ ${
-      d.getDay() === 0 ? "Chủ Nhật" : d.getDay() + 1
+    th.textContent = `${
+      d.getDay() === 0 ? "Chủ Nhật" : `Thứ ${d.getDay() + 1}`
     } (${d.toLocaleDateString("vi-VN")})`;
     th.className = "th-day";
     headerRow.appendChild(th);
@@ -24,24 +29,42 @@ function generateHeaders() {
 function generateTableBody() {
   let tbody = document.getElementById("table-body");
   let periods = [
-    "Sáng (8:00 - 12:00)*",
-    "Chiều (12:00 - 17:00)",
-    "Tối (17:00 - 23:00)",
+    { label: "Sáng (8:00 - 12:00)*", start: 8, end: 12 },
+    { label: "Chiều (12:00 - 17:00)", start: 12, end: 17 },
+    { label: "Tối (17:00 - 23:00)", start: 17, end: 23 },
   ];
+
+  let now = new Date();
+  let currentDay = now.getDay();
+  let currentHour = now.getHours();
+  let lockHour = currentHour + 5;
 
   periods.forEach((period) => {
     let tr = document.createElement("tr");
     let td = document.createElement("td");
-    td.textContent = period;
+
+    td.textContent = period.label;
     td.style = "background: #07bcd0; font-weight: bold;";
     tr.appendChild(td);
 
     for (let i = 1; i <= 7; i++) {
       let tdInput = document.createElement("td");
       let textarea = document.createElement("textarea");
+
+      let isLocked =
+        ![6, 0].includes(currentDay) &&
+        (i < currentDay || (i === currentDay && lockHour >= period.end));
+
+      if (isLocked) {
+        textarea.disabled = true;
+        textarea.style.background = "#ddd";
+        textarea.style.cursor = "not-allowed";
+      }
+
       tdInput.appendChild(textarea);
       tr.appendChild(tdInput);
     }
+
     tbody.appendChild(tr);
   });
 }
@@ -167,6 +190,7 @@ function submitSchedule() {
 }
 
 async function initTableData() {
+  const scheduleData = JSON.parse(sessionStorage.getItem("scheduleData"));
   const email = sessionStorage.getItem("user_email");
   const loadingOverlay = document.getElementById("loadingOverlay");
   loadingOverlay.style.display = "flex";
@@ -192,26 +216,35 @@ async function initTableData() {
       return;
     }
 
+    console.log(" data ~ scheduleData:", { data, scheduleData });
     let tableRows = document.querySelectorAll("tbody tr");
 
     for (let i = 0; i < data.length; i++) {
       for (let j = 0; j < data[i].length; j++) {
-        let cellData = data[i][j].trim();
+        if (scheduleData) {
+          let scheduleCellData = scheduleData[i][j];
+          if (!scheduleCellData) continue;
 
-        if (!cellData) continue;
+          if (tableRows[i]?.cells[j + 1]) {
+            tableRows[i].cells[j + 1].querySelector("textarea").value =
+              scheduleCellData;
+          }
+        } else {
+          let cellData = data[i][j].trim();
 
-        let matchingTimes = cellData
-          .split("\n")
-          .map((entry) => entry.trim())
-          .filter((entry) => entry.includes(`- ${email} (`))
-          .map((entry) => {
-            return entry.match(/\(([^)]+)\)/)[1];
-          })
-          .filter(Boolean);
+          if (!cellData) continue;
 
-        if (matchingTimes.length > 0 && tableRows[i]?.cells[j + 1]) {
-          tableRows[i].cells[j + 1].querySelector("textarea").value =
-            matchingTimes.join(", ");
+          let matchingTimes = cellData
+            .split("\n")
+            .map((entry) => entry.trim())
+            .filter((entry) => entry.includes(`- ${email} (`))
+            .map((entry) => entry.match(/\(([^)]+)\)/)[1])
+            .filter(Boolean);
+
+          if (matchingTimes.length > 0 && tableRows[i]?.cells[j + 1]) {
+            tableRows[i].cells[j + 1].querySelector("textarea").value =
+              matchingTimes.join(", ");
+          }
         }
       }
     }
@@ -229,3 +262,8 @@ document.addEventListener("DOMContentLoaded", function () {
     window.location.href = "user.html";
   }
 });
+
+function logout() {
+  sessionStorage.clear();
+  window.location.href = "index.html";
+}

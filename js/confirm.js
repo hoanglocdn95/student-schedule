@@ -1,10 +1,10 @@
 const GOOGLE_API_URL =
-  "https://script.google.com/macros/s/AKfycby-4maO6TgE0h5X6WfuL0nM2KygFp1w2U1paOe6lZMhMABS9peKi3zOatkkB3FymctM/exec";
+  "https://script.google.com/macros/s/AKfycbxJToTpR-X7QIErdwIeleZUFe0CjNkn_y97SMfoBb3ErSLfuS5aVNRA_E1nAHAyTUfg/exec";
 
 const scheduleData = JSON.parse(sessionStorage.getItem("scheduleData"));
 const useInfo = JSON.parse(sessionStorage.getItem("user_info"));
-const name = useInfo.name;
-const email = useInfo.email;
+const { name, timezone } = useInfo;
+const email = sessionStorage.getItem("user_email");
 const tbody = document.querySelector("#confirmTable tbody");
 
 const timeSlots = [
@@ -56,7 +56,7 @@ function submitToGoogleSheets() {
     redirect: "follow",
     headers: { "Content-Type": "text/plain;charset=utf-8" },
     method: "POST",
-    body: JSON.stringify(updatedSchedule),
+    body: JSON.stringify({ scheduledData: updatedSchedule, timezone }),
   })
     .then((response) => response.json())
     .then((data) => {
@@ -76,17 +76,22 @@ function generateHeaders() {
   let dayOfWeek = today.getDay();
   let monday = new Date(today);
   monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+
+  if (dayOfWeek === 6 || dayOfWeek === 0) {
+    monday.setDate(monday.getDate() + 7);
+  }
+
   let sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
+  sunday.setDate(monday.getDate() + 6); // Tìm ngày Chủ Nhật
 
   let headerRow = document.getElementById("table-header");
 
   for (let d = new Date(monday); d <= sunday; d.setDate(d.getDate() + 1)) {
     let th = document.createElement("th");
-    th.className = "th-day";
-    th.textContent = `${d.getDay() !== 0 ? "Thứ" : ""} ${
-      d.getDay() === 0 ? "Chủ Nhật" : d.getDay() + 1
+    th.textContent = `${
+      d.getDay() === 0 ? "Chủ Nhật" : `Thứ ${d.getDay() + 1}`
     } (${d.toLocaleDateString("vi-VN")})`;
+    th.className = "th-day";
     headerRow.appendChild(th);
   }
 }
@@ -104,3 +109,8 @@ document.addEventListener("DOMContentLoaded", function () {
     window.location.href = "user.html";
   }
 });
+
+function logout() {
+  sessionStorage.clear();
+  window.location.href = "index.html";
+}
