@@ -23,7 +23,11 @@ function generateHeaders() {
 
 function generateTableBody() {
   let tbody = document.getElementById("table-body");
-  let periods = ["Sáng (8h - 12h)", "Chiều (12h - 17h)", "Tối (17h - 23h)"];
+  let periods = [
+    "Sáng (8:00 - 12:00)*",
+    "Chiều (12:00 - 17:00)",
+    "Tối (17:00 - 23:00)",
+  ];
 
   periods.forEach((period) => {
     let tr = document.createElement("tr");
@@ -163,7 +167,7 @@ function submitSchedule() {
 }
 
 async function initTableData() {
-  const email = JSON.parse(sessionStorage.getItem("user_email"));
+  const email = sessionStorage.getItem("user_email");
   const loadingOverlay = document.getElementById("loadingOverlay");
   loadingOverlay.style.display = "flex";
 

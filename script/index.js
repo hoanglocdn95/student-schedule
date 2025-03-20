@@ -253,7 +253,7 @@ function updateCellData(cellContent, newUser, newEmail, newTimes) {
   var updated = false;
 
   var newLines = lines.map((line) => {
-    var [existingUser, existingEmail, existingTimes] = extractUserData(line);
+    var [existingUser, existingEmail] = extractUserData(line);
 
     if (existingEmail === newEmail) {
       updated = true;
@@ -287,6 +287,9 @@ function handleCalendarType(data) {
   var sheet =
     ss.getSheetByName(sheetName) ||
     createSheetWithHeaders(ss, sheetName, monday, sunday);
+
+  // filter Timezone from data
+  // createSheetWithHeadersWithTimezone(ss, sheetName, monday, sunday);
 
   var startRow = 2;
   var startColumn = 2;
@@ -403,6 +406,94 @@ function createSheetWithHeaders(ss, sheetName, monday, sunday) {
 
   // Cho phép nội dung trong ô xuống hàng
   tableRange.setWrap(true);
+
+  return sheet;
+}
+
+function createSheetWithHeadersWithTimezone(ss, sheetName, monday, sunday) {
+  var sheet = ss.insertSheet(sheetName);
+
+  // Danh sách tên ngày trong tuần
+  var dayNames = [
+    "Chủ Nhật",
+    "Thứ 2",
+    "Thứ 3",
+    "Thứ 4",
+    "Thứ 5",
+    "Thứ 6",
+    "Thứ 7",
+  ];
+
+  // Gộp 3 cột A, B, C hàng đầu tiên và đặt chữ "TimeZone"
+  var titleRange = sheet.getRange(1, 1, 1, 3);
+  titleRange.merge();
+  titleRange
+    .setValue("TimeZone")
+    .setFontWeight("bold")
+    .setFontSize(20)
+    .setHorizontalAlignment("center")
+    .setVerticalAlignment("middle")
+    .setBackground("#FF9800") // Màu cam
+    .setFontColor("#FFFFFF"); // Chữ trắng
+
+  // Hàng thứ 2 để trống
+  sheet.getRange(2, 1, 1, 10).setValue("");
+
+  // Tạo tiêu đề cột bắt đầu từ hàng 3
+  var headers = ["Buổi"];
+  for (var d = new Date(monday); d <= sunday; d.setDate(d.getDate() + 1)) {
+    var dayOfWeek = dayNames[d.getDay()];
+    var formattedDate = Utilities.formatDate(
+      new Date(d),
+      Session.getScriptTimeZone(),
+      "dd/MM/yyyy"
+    );
+    headers.push(`${dayOfWeek} (${formattedDate})`);
+  }
+
+  // Ghi tiêu đề vào hàng 3
+  var headerRange = sheet.getRange(3, 1, 1, headers.length);
+  headerRange.setValues([headers]);
+
+  // Định dạng header: In đậm, căn giữa, nền #f2f2f2 (trừ cột đầu)
+  headerRange
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setVerticalAlignment("middle");
+  headerRange.offset(0, 1).setBackground("#f2f2f2");
+
+  // Tạo các hàng "Buổi sáng", "Buổi chiều", "Buổi tối"
+  var periods = [
+    "Sáng (8:00 - 12:00)*",
+    "Chiều (12:00 - 17:00)",
+    "Tối (17:00 - 23:00)",
+  ];
+  for (var i = 0; i < periods.length; i++) {
+    sheet.getRange(i + 4, 1).setValue(periods[i]);
+  }
+
+  // Định dạng cột đầu tiên: In đậm, căn giữa, nền #07bdd0
+  var firstColumnRange = sheet.getRange(3, 1, periods.length + 1, 1);
+  firstColumnRange
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setVerticalAlignment("middle")
+    .setBackground("#07bdd0");
+
+  // Định dạng viền cho toàn bộ bảng
+  var tableRange = sheet.getRange(3, 1, periods.length + 1, headers.length);
+  tableRange.setBorder(true, true, true, true, true, true);
+
+  // Điều chỉnh độ rộng cột tự động, tối đa 300px
+  for (var col = 1; col <= headers.length; col++) {
+    sheet.autoResizeColumn(col);
+    if (sheet.getColumnWidth(col) > 300) {
+      sheet.setColumnWidth(col, 300);
+    }
+  }
+
+  // Căn giữa theo chiều dọc cho toàn bộ nội dung
+  sheet.getDataRange().setVerticalAlignment("middle");
 
   return sheet;
 }

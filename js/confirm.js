@@ -7,7 +7,11 @@ const name = useInfo.name;
 const email = useInfo.email;
 const tbody = document.querySelector("#confirmTable tbody");
 
-const timeSlots = ["Sáng (8h - 12h)", "Chiều (12h - 17h)", "Tối (17h - 23h)"];
+const timeSlots = [
+  "Sáng (8:00 - 12:00)*",
+  "Chiều (12:00 - 17:00)",
+  "Tối (17:00 - 23:00)",
+];
 
 scheduleData.forEach((row, index) => {
   const tr = document.createElement("tr");
