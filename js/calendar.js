@@ -1,5 +1,5 @@
 const GOOGLE_API_URL =
-  "https://script.google.com/macros/s/AKfycbxJToTpR-X7QIErdwIeleZUFe0CjNkn_y97SMfoBb3ErSLfuS5aVNRA_E1nAHAyTUfg/exec";
+  "https://script.google.com/macros/s/AKfycbxh45YvZPiNMfhCBEdRPniGvzeODmphlsceKO33bJt-b0Mf0GIkzMJXYs7y3USYmHBfvg/exec";
 
 function generateHeaders() {
   let today = new Date();

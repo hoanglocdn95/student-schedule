@@ -271,6 +271,8 @@ function updateCellData(cellContent, newUser, newEmail, newTimes) {
 function handleCalendarType(data) {
   const { scheduledData, timezone } = data;
 
+  logToSheet("timezone:" + timezone);
+
   var currentDate = new Date();
   let dayOfWeek = currentDate.getDay();
   var monday = new Date(currentDate);
@@ -492,7 +494,7 @@ function generateSheetBody(startRow, startColumn, sheetData, currentSheet) {
   var numRows = sheetData.length;
   var numCols = sheetData[0].length;
 
-  var existingData = sheet
+  var existingData = currentSheet
     .getRange(startRow, startColumn, numRows, numCols)
     .getValues();
 
