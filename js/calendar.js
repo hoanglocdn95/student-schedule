@@ -1,6 +1,10 @@
 const GOOGLE_API_URL =
   "https://script.google.com/macros/s/AKfycbxh45YvZPiNMfhCBEdRPniGvzeODmphlsceKO33bJt-b0Mf0GIkzMJXYs7y3USYmHBfvg/exec";
 
+const REMAIN_TIME_TO_EDIT = 5;
+
+let isAllowEdit = true;
+
 function generateHeaders() {
   let today = new Date();
   let dayOfWeek = today.getDay();
@@ -37,7 +41,7 @@ function generateTableBody() {
   let now = new Date();
   let currentDay = now.getDay();
   let currentHour = now.getHours();
-  let lockHour = currentHour + 5;
+  let lockHour = currentHour + REMAIN_TIME_TO_EDIT;
 
   periods.forEach((period) => {
     let tr = document.createElement("tr");
@@ -51,17 +55,20 @@ function generateTableBody() {
       let tdInput = document.createElement("td");
       let textarea = document.createElement("textarea");
 
-      let isLocked =
-        ![6, 0].includes(currentDay) &&
-        (i < currentDay || (i === currentDay && lockHour >= period.end));
+      if (isAllowEdit) {
+        let isLocked =
+          ![6, 0].includes(currentDay) &&
+          (i < currentDay || (i === currentDay && lockHour >= period.start));
 
-      if (isLocked) {
-        textarea.disabled = true;
-        textarea.style.background = "#ddd";
-        textarea.style.cursor = "not-allowed";
+        if (isLocked) {
+          textarea.disabled = true;
+          textarea.style.background = "#ddd";
+          textarea.style.cursor = "not-allowed";
+        }
+
+        tdInput.appendChild(textarea);
       }
 
-      tdInput.appendChild(textarea);
       tr.appendChild(tdInput);
     }
 
@@ -73,6 +80,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   generateHeaders();
   generateTableBody();
   await initTableData();
+  defineEditingPermission();
 });
 
 function validateScheduleData() {
@@ -172,6 +180,7 @@ function validateScheduleData() {
 }
 
 function submitSchedule() {
+  if (!isAllowEdit) return;
   if (!validateScheduleData()) {
     return;
   }
@@ -193,6 +202,7 @@ async function initTableData() {
   const scheduleData = JSON.parse(sessionStorage.getItem("scheduleData"));
   const email = sessionStorage.getItem("user_email");
   const loadingOverlay = document.getElementById("loadingOverlay");
+
   loadingOverlay.style.display = "flex";
 
   if (!email) {
@@ -210,40 +220,45 @@ async function initTableData() {
     const res = await response.json();
     loadingOverlay.style.display = "none";
     const data = res.data;
+    console.log(" initTableData ~ data:", data);
 
-    if (!data || !Array.isArray(data) || data.length === 0) {
+    if ((!data || !Array.isArray(data) || data.length === 0) && !scheduleData) {
+      isAllowEdit = true;
       console.error("Không có dữ liệu hoặc dữ liệu không hợp lệ.");
       return;
     }
 
-    console.log(" data ~ scheduleData:", { data, scheduleData });
+    isAllowEdit = false;
+
     let tableRows = document.querySelectorAll("tbody tr");
 
     for (let i = 0; i < data.length; i++) {
       for (let j = 0; j < data[i].length; j++) {
         if (scheduleData) {
           let scheduleCellData = scheduleData[i][j];
-          if (!scheduleCellData) continue;
 
           if (tableRows[i]?.cells[j + 1]) {
-            tableRows[i].cells[j + 1].querySelector("textarea").value =
-              scheduleCellData;
+            tableRows[i].cells[j + 1].textContent = scheduleCellData;
           }
         } else {
           let cellData = data[i][j].trim();
 
-          if (!cellData) continue;
+          if (!cellData) {
+            tableRows[i].cells[j + 1].textContent = "";
+            continue;
+          }
 
           let matchingTimes = cellData
             .split("\n")
             .map((entry) => entry.trim())
             .filter((entry) => entry.includes(`- ${email} (`))
-            .map((entry) => entry.match(/\(([^)]+)\)/)[1])
+            .map((entry) => entry.match(/\(([^)]+)\)/g)[1].slice(1, -1))
             .filter(Boolean);
 
           if (matchingTimes.length > 0 && tableRows[i]?.cells[j + 1]) {
-            tableRows[i].cells[j + 1].querySelector("textarea").value =
-              matchingTimes.join(", ");
+            tableRows[i].cells[j + 1].textContent = matchingTimes.join(", ");
+          } else {
+            tableRows[i].cells[j + 1].textContent = "";
           }
         }
       }
@@ -267,3 +282,9 @@ function logout() {
   sessionStorage.clear();
   window.location.href = "index.html";
 }
+
+const defineEditingPermission = () => {
+  document.getElementById("btn-send").style.display = isAllowEdit
+    ? "block"
+    : "none";
+};

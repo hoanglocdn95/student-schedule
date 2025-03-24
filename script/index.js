@@ -522,5 +522,6 @@ function generateSheetBody(startRow, startColumn, sheetData, currentSheet) {
 
   currentSheet
     .getRange(startRow, startColumn, numRows, numCols)
-    .setValues(existingData);
+    .setValues(existingData)
+    .setWrap(true);
 }

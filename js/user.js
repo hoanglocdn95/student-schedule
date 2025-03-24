@@ -20,26 +20,35 @@ document.addEventListener("DOMContentLoaded", async function () {
   const form = document.getElementById("userInfoForm");
   const loadingOverlay = document.getElementById("loadingOverlay");
 
-  document
-    .getElementById("userInfoForm")
-    .addEventListener("submit", async function (e) {
-      e.preventDefault();
-    });
-
   form.addEventListener("submit", async function (event) {
+    const userInStorage = JSON.parse(sessionStorage.getItem("user_info"));
+
     event.preventDefault();
 
-    loadingOverlay.style.display = "flex";
+    const minHoursPerSession =
+      document.getElementById("minHoursPerSession").value;
 
-    const minHoursPerSession = document
-      .getElementById("minHoursPerSession")
-      .value.toString()
-      .replace(".", ",");
+    const maxHoursPerSession =
+      document.getElementById("maxHoursPerSession").value;
 
-    const maxHoursPerSession = document
-      .getElementById("maxHoursPerSession")
-      .value.toString()
-      .replace(".", ",");
+    const minHoursPerWeek = document.getElementById("minHoursPerWeek").value;
+    const maxHoursPerWeek = document.getElementById("maxHoursPerWeek").value;
+
+    if (+minHoursPerWeek > +maxHoursPerWeek) {
+      M.toast({
+        html: "Vui lòng nhập Số giờ học tối thiểu / tuần nhỏ hơn hoặc bằng Số giờ học tối đa / tuần",
+        classes: "yellow darken-1",
+      });
+      return;
+    }
+
+    if (+minHoursPerSession > +maxHoursPerSession) {
+      M.toast({
+        html: "Vui lòng nhập Số giờ học tối thiểu / buổi nhỏ hơn hoặc bằng Số giờ học tối đa / buổi",
+        classes: "yellow darken-1",
+      });
+      return;
+    }
 
     const userData = {
       type: "user_info",
@@ -51,11 +60,18 @@ document.addEventListener("DOMContentLoaded", async function () {
         ? "Đã book"
         : "Chưa book",
       notes: document.getElementById("notes").value || "",
-      minHoursPerWeek: document.getElementById("minHoursPerWeek").value || "",
-      maxHoursPerWeek: document.getElementById("maxHoursPerWeek").value || "",
-      minHoursPerSession: minHoursPerSession,
-      maxHoursPerSession: maxHoursPerSession,
+      minHoursPerWeek: minHoursPerWeek || "",
+      maxHoursPerWeek: maxHoursPerWeek || "",
+      minHoursPerSession: minHoursPerSession.toString().replace(".", ","),
+      maxHoursPerSession: maxHoursPerSession.toString().replace(".", ","),
     };
+
+    if (compareObjects(userInStorage, userData)) {
+      window.location.href = "calendar.html";
+      return;
+    }
+
+    loadingOverlay.style.display = "flex";
 
     await fetch(GOOGLE_API_URL, {
       method: "POST",
@@ -104,7 +120,6 @@ async function fetchUserData(email) {
       } = data.user;
 
       if (pteExamDate) {
-        console.log(" fetchUserData ~ pteExamDate:", pteExamDate);
         const dateObj = new Date(pteExamDate);
         const formattedDate = dateObj.toISOString().split("T")[0];
         document.getElementById("pteExamDate").value = formattedDate;
@@ -132,10 +147,6 @@ async function fetchUserData(email) {
   }
 }
 
-function nextWithoutUpdate() {
-  window.location.href = "calendar.html";
-}
-
 document.addEventListener("DOMContentLoaded", function () {
   if (!sessionStorage.getItem("user_email")) {
     window.location.href = "index.html";
@@ -145,4 +156,28 @@ document.addEventListener("DOMContentLoaded", function () {
 function logout() {
   sessionStorage.clear();
   window.location.href = "index.html";
+}
+
+function compareObjects(obj1, obj2) {
+  const keys1 = Object.keys(obj1);
+  const keys2 = Object.keys(obj2);
+
+  const commonKeys = keys1.filter((key) => keys2.includes(key));
+
+  return commonKeys.every((key) => {
+    let val1 = obj1[key];
+    let val2 = obj2[key];
+
+    if (key === "pteExamDate") {
+      val1 = new Date(val1).toISOString().split("T")[0];
+      val2 = new Date(val2).toISOString().split("T")[0];
+    }
+
+    if (typeof val1 === "number" || typeof val2 === "number") {
+      val1 = val1.toString().replace(".", ",");
+      val2 = val2.toString().replace(".", ",");
+    }
+
+    return val1 === val2;
+  });
 }

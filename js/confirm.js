@@ -40,7 +40,7 @@ function addUserInfoToSchedule(scheduleData) {
   return scheduleData.map((row) =>
     row.map((cell) => {
       if (cell.trim() !== "") {
-        return `${name} - ${email} (${cell})`;
+        return `${name} - ${timezone} - ${email} (${cell})`;
       }
       return cell;
     })
@@ -49,7 +49,6 @@ function addUserInfoToSchedule(scheduleData) {
 
 function submitToGoogleSheets() {
   const updatedSchedule = addUserInfoToSchedule(scheduleData);
-  console.log(" submitToGoogleSheets ~ updatedSchedule:", updatedSchedule);
   const loadingOverlay = document.getElementById("loadingOverlay");
   loadingOverlay.style.display = "flex";
 
@@ -65,7 +64,7 @@ function submitToGoogleSheets() {
       M.toast({ html: "Dữ liệu đã được lưu!", classes: "green darken-1" });
       setTimeout(() => {
         window.location.href = "thanks.html";
-      }, 2000);
+      }, 1000);
     })
     .catch((error) => {
       console.error("error:", error);
