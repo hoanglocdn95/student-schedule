@@ -1,9 +1,11 @@
 const GOOGLE_API_URL =
-  "https://script.google.com/macros/s/AKfycbxh45YvZPiNMfhCBEdRPniGvzeODmphlsceKO33bJt-b0Mf0GIkzMJXYs7y3USYmHBfvg/exec";
+  "https://script.google.com/macros/s/AKfycbweTUZ5qJLgHiZmdMI6kdTpyL3MPQHIcKLYXzFoTOKrumfjI2FuEmRK5x763eOoLoJRcg/exec";
 
 const REMAIN_TIME_TO_EDIT = 5;
 
 let isAllowEdit = true;
+
+let currentScheduledData = Array.from({ length: 3 }, () => Array(7).fill(""));
 
 function generateHeaders() {
   let today = new Date();
@@ -43,7 +45,7 @@ function generateTableBody() {
   let currentHour = now.getHours();
   let lockHour = currentHour + REMAIN_TIME_TO_EDIT;
 
-  periods.forEach((period) => {
+  periods.forEach((period, index) => {
     let tr = document.createElement("tr");
     let td = document.createElement("td");
 
@@ -67,6 +69,8 @@ function generateTableBody() {
         }
 
         tdInput.appendChild(textarea);
+      } else {
+        tdInput.textContent = currentScheduledData[index][i - 1];
       }
 
       tr.appendChild(tdInput);
@@ -77,9 +81,9 @@ function generateTableBody() {
 }
 
 document.addEventListener("DOMContentLoaded", async function () {
+  await initTableData();
   generateHeaders();
   generateTableBody();
-  await initTableData();
   defineEditingPermission();
 });
 
@@ -220,33 +224,20 @@ async function initTableData() {
     const res = await response.json();
     loadingOverlay.style.display = "none";
     const data = res.data;
-    console.log(" initTableData ~ data:", data);
 
     if ((!data || !Array.isArray(data) || data.length === 0) && !scheduleData) {
-      isAllowEdit = true;
       console.error("Không có dữ liệu hoặc dữ liệu không hợp lệ.");
       return;
     }
 
-    isAllowEdit = false;
-
-    let tableRows = document.querySelectorAll("tbody tr");
-
     for (let i = 0; i < data.length; i++) {
       for (let j = 0; j < data[i].length; j++) {
         if (scheduleData) {
-          let scheduleCellData = scheduleData[i][j];
-
-          if (tableRows[i]?.cells[j + 1]) {
-            tableRows[i].cells[j + 1].textContent = scheduleCellData;
-          }
+          currentScheduledData[i][j] = scheduleData[i][j];
         } else {
           let cellData = data[i][j].trim();
 
-          if (!cellData) {
-            tableRows[i].cells[j + 1].textContent = "";
-            continue;
-          }
+          if (!cellData) continue;
 
           let matchingTimes = cellData
             .split("\n")
@@ -255,13 +246,20 @@ async function initTableData() {
             .map((entry) => entry.match(/\(([^)]+)\)/g)[1].slice(1, -1))
             .filter(Boolean);
 
-          if (matchingTimes.length > 0 && tableRows[i]?.cells[j + 1]) {
-            tableRows[i].cells[j + 1].textContent = matchingTimes.join(", ");
-          } else {
-            tableRows[i].cells[j + 1].textContent = "";
+          if (matchingTimes.length > 0) {
+            currentScheduledData[i][j] = matchingTimes.join(", ");
           }
         }
       }
+    }
+
+    if (
+      !scheduleData &&
+      currentScheduledData.map((cs) => cs.join("")).join("") === ""
+    ) {
+      isAllowEdit = true;
+    } else {
+      isAllowEdit = false;
     }
   } catch (error) {
     console.error("Lỗi khi lấy dữ liệu:", error);
@@ -287,4 +285,37 @@ const defineEditingPermission = () => {
   document.getElementById("btn-send").style.display = isAllowEdit
     ? "block"
     : "none";
+
+  if (isAllowEdit) {
+    document.getElementById("register-calendar-guide").style.display = "block";
+    // const array = Array.from({ length: 3 }, () => Array(7).fill(""));
+
+    // const tableRows = document.querySelectorAll("tbody tr");
+    // for (let i = 0; i < array.length; i++) {
+    //   for (let j = 0; j < array[i].length; j++) {
+    //     tableRows[i].cells[j + 1].innerHTML = "<textarea></textarea>";
+
+    //   }
+    // }
+  } else {
+    document.getElementById("registered-calendar").style.display = "block";
+
+    let today = new Date();
+    let dayOfWeek = today.getDay();
+    let monday = new Date(today);
+    monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+
+    if (dayOfWeek === 6 || dayOfWeek === 0) {
+      monday.setDate(monday.getDate() + 7);
+    }
+
+    let sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+
+    document.getElementById("range-time").innerHTML = `Từ <b>${new Date(
+      monday
+    ).toLocaleDateString("vi-VN")}</b> đến <b>${new Date(
+      sunday
+    ).toLocaleDateString("vi-VN")}</b>`;
+  }
 };

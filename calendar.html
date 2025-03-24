@@ -129,18 +129,37 @@
       </div>
     </nav>
     <div class="calendar-container">
-      <h4 class="title" style="color: #ff9800; margin-top: 60px">
-        Nhập Thời Gian Rảnh
-      </h4>
-      <div class="guide">
-        <p>Điền thời gian rảnh vào bảng theo format:</p>
-        <p style="margin-left: 12px; color: #ff9800; font-weight: bold">
-          (Từ) Giờ:phút - (Đến) Giờ:phút
-        </p>
-        <p>
-          Ví dụ: 8:00-9:00, nếu bạn rảnh nhiều khung giờ: 8:00-9:00, 10:00-11:00
-        </p>
+      <div id="register-calendar-guide" style="display: none">
+        <h4 class="title" style="color: #ff9800; margin-top: 60px">
+          Đăng Ký Thời Gian Rảnh
+        </h4>
+        <div class="guide">
+          <p>Vui lòng điền thời gian rảnh bạn vào bảng theo format:</p>
+          <p style="margin-left: 12px; color: #ff9800; font-weight: bold">
+            (Từ) Giờ:phút - (Đến) Giờ:phút
+          </p>
+          <p>
+            Ví dụ: 8:00-9:00, nếu bạn rảnh nhiều khung giờ: 8:00-9:00,
+            10:00-11:00
+          </p>
+        </div>
       </div>
+      <div id="registered-calendar" style="display: none">
+        <h4
+          class="title"
+          style="color: #ff9800; margin-top: 60px; padding-bottom: 0px"
+        >
+          Thời gian rảnh của bạn
+        </h4>
+        <h5 class="title" id="range-time">Từ 24/03/2025 đến 30/03/2025</h5>
+        <div class="guide">
+          <p>
+            Lịch học đang được sắp xếp bởi admin. Nếu muốn thay đổi, vui lòng
+            liên hệ đến <b>Admin</b>
+          </p>
+        </div>
+      </div>
+
       <pre id="error-container" class="error-message"></pre>
 
       <form id="scheduleForm">

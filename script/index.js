@@ -20,6 +20,14 @@ function doPost(e) {
   }
 }
 
+function getFormattedDate(date) {
+  if (date instanceof Date) {
+    const timeZone = Session.getScriptTimeZone(); // Lấy múi giờ của script (thường là GMT+7)
+    return Utilities.formatDate(date, timeZone, "yyyy-MM-dd"); // Giữ nguyên ngày theo múi giờ script
+  }
+  return date; // Nếu không phải Date, trả về nguyên gốc
+}
+
 function getUser(email) {
   if (!email) {
     return ContentService.createTextOutput(
@@ -48,8 +56,17 @@ function getUser(email) {
     if (data[i][2] && data[i][2] === email) {
       const userData = {};
       headers.forEach((_, index) => {
+        if (index === 4) {
+          logToSheet(
+            "pteExamDate: " +
+              data[i][index] +
+              "---" +
+              getFormattedDate(data[i][index])
+          );
+        }
         if (userKeys[index]) {
-          userData[userKeys[index]] = data[i][index];
+          userData[userKeys[index]] =
+            index === 4 ? getFormattedDate(data[i][index]) : data[i][index];
         }
       });
 
@@ -270,8 +287,6 @@ function updateCellData(cellContent, newUser, newEmail, newTimes) {
 
 function handleCalendarType(data) {
   const { scheduledData, timezone } = data;
-
-  logToSheet("timezone:" + timezone);
 
   var currentDate = new Date();
   let dayOfWeek = currentDate.getDay();
@@ -520,8 +535,14 @@ function generateSheetBody(startRow, startColumn, sheetData, currentSheet) {
     }
   }
 
-  currentSheet
+  const range = currentSheet
     .getRange(startRow, startColumn, numRows, numCols)
     .setValues(existingData)
     .setWrap(true);
+
+  // 🔹 Tự động điều chỉnh chiều cao hàng
+  currentSheet.autoResizeRows(startRow, numRows);
+
+  // 🔹 Nếu cần, thu nhỏ cột để ép nội dung xuống dòng
+  currentSheet.autoResizeColumns(startColumn, numCols);
 }

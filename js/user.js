@@ -1,5 +1,5 @@
 const GOOGLE_API_URL =
-  "https://script.google.com/macros/s/AKfycbxh45YvZPiNMfhCBEdRPniGvzeODmphlsceKO33bJt-b0Mf0GIkzMJXYs7y3USYmHBfvg/exec";
+  "https://script.google.com/macros/s/AKfycbweTUZ5qJLgHiZmdMI6kdTpyL3MPQHIcKLYXzFoTOKrumfjI2FuEmRK5x763eOoLoJRcg/exec";
 
 document.addEventListener("DOMContentLoaded", async function () {
   const emailField = document.getElementById("email");
@@ -56,15 +56,14 @@ document.addEventListener("DOMContentLoaded", async function () {
       email: document.getElementById("email").value,
       timezone: document.getElementById("timezone").value || "",
       pteExamDate: document.getElementById("pteExamDate").value || "",
-      examBooked: document.getElementById("examBooked").checked
-        ? "Đã book"
-        : "Chưa book",
+      examBooked: document.getElementById("examBooked").checked,
       notes: document.getElementById("notes").value || "",
       minHoursPerWeek: minHoursPerWeek || "",
       maxHoursPerWeek: maxHoursPerWeek || "",
       minHoursPerSession: minHoursPerSession.toString().replace(".", ","),
       maxHoursPerSession: maxHoursPerSession.toString().replace(".", ","),
     };
+    console.log(" userData:", userData);
 
     if (compareObjects(userInStorage, userData)) {
       window.location.href = "calendar.html";
@@ -84,7 +83,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         M.toast({ html: "Thông tin đã được lưu!", classes: "green darken-1" });
         sessionStorage.setItem("user_info", JSON.stringify(userData));
         setTimeout(() => {
-          window.location.href = "calendar.html";
+          // window.location.href = "calendar.html";
         }, 1000);
       })
       .catch((error) => {

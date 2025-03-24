@@ -1,5 +1,5 @@
 const GOOGLE_API_URL =
-  "https://script.google.com/macros/s/AKfycbxh45YvZPiNMfhCBEdRPniGvzeODmphlsceKO33bJt-b0Mf0GIkzMJXYs7y3USYmHBfvg/exec";
+  "https://script.google.com/macros/s/AKfycbweTUZ5qJLgHiZmdMI6kdTpyL3MPQHIcKLYXzFoTOKrumfjI2FuEmRK5x763eOoLoJRcg/exec";
 
 const scheduleData = JSON.parse(sessionStorage.getItem("scheduleData"));
 const useInfo = JSON.parse(sessionStorage.getItem("user_info"));
