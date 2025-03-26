@@ -14,15 +14,21 @@
         background-color: #faf2eb;
         padding: 10px;
       }
+      h3,
+      h4,
+      h5 {
+        margin: 0 0 8px;
+      }
       .container {
         background: white;
         padding: 30px;
         border-radius: 10px;
         box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-        max-width: 450px;
-        height: 320px;
+        max-width: 550px;
+        max-height: 550px;
+        height: fit-content;
         width: 100%;
-        margin-top: 60px;
+        margin-top: 40px;
       }
       .btn {
         background-color: #ff9800;
@@ -51,7 +57,22 @@
   </head>
   <body>
     <div class="container">
-      <h4 class="center">Đăng nhập</h4>
+      <h3 class="center">Q3 Language</h3>
+      <h4 class="center">Ứng dụng đăng ký thời gian rảnh</h4>
+      <hr style="width: calc(100% + 60px); margin: 16px 0 16px -30px" />
+      <h5 class="center" style="margin-top: 8px">
+        Bạn là giáo viên hay học viên?
+      </h5>
+      <div class="center">
+        <label>
+          <input type="radio" name="userType" value="student" checked />
+          <span>Học viên</span>
+        </label>
+        <label style="margin-left: 20px">
+          <input type="radio" name="userType" value="trainer" />
+          <span>Giáo viên</span>
+        </label>
+      </div>
       <div class="input-field">
         <input type="email" id="emailInput" required />
         <label for="emailInput">Nhập email của bạn</label>
@@ -82,81 +103,6 @@
     </div>
 
     <script src="./libs/materialize.min.js"></script>
-    <script>
-      async function login() {
-        const email = document.getElementById("emailInput").value.trim();
-        const password = document.getElementById("passwordInput").value.trim();
-        const loadingOverlay = document.getElementById("loadingOverlay");
-
-        if (email === "" || password === "") {
-          M.toast({
-            html: "Vui lòng nhập email và mật khẩu!",
-            classes: "red",
-            displayLength: 2000,
-          });
-          return;
-        }
-
-        loadingOverlay.style.display = "flex";
-
-        const GOOGLE_API_URL =
-          "https://script.google.com/macros/s/AKfycbweTUZ5qJLgHiZmdMI6kdTpyL3MPQHIcKLYXzFoTOKrumfjI2FuEmRK5x763eOoLoJRcg/exec";
-
-        try {
-          const response = await fetch(GOOGLE_API_URL, {
-            method: "POST",
-            redirect: "follow",
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify({ type: "login", email, password }),
-          });
-
-          const result = await response.json();
-          const res = JSON.parse(result.message);
-          const status = res.status;
-
-          loadingOverlay.style.display = "none";
-
-          switch (status) {
-            case "wrong_password":
-              M.toast({
-                html: "Sai mật khẩu!",
-                classes: "red",
-                displayLength: 2000,
-              });
-              break;
-            case "email_not_found":
-              M.toast({
-                html: "Email không tồn tại trong hệ thống",
-                classes: "red",
-                displayLength: 2000,
-              });
-              break;
-            case "ok":
-              M.toast({
-                html: "Đăng nhập thành công!",
-                classes: "green",
-                displayLength: 2000,
-              });
-              sessionStorage.setItem("user_email", email);
-              setTimeout(() => (window.location.href = "user.html"), 1000);
-              break;
-            default:
-              M.toast({
-                html: "Đã xảy ra lỗi, vui lòng thử lại",
-                classes: "red",
-                displayLength: 2000,
-              });
-          }
-        } catch (error) {
-          loadingOverlay.style.display = "none";
-          M.toast({
-            html: "Lỗi kết nối!",
-            classes: "red",
-            displayLength: 2000,
-          });
-          console.error("Lỗi:", error);
-        }
-      }
-    </script>
+    <script src="./js/login.js"></script>
   </body>
 </html>

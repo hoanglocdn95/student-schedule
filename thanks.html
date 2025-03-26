@@ -15,44 +15,36 @@
         margin: 0;
       }
 
-      p {
+      #q3-language {
         text-transform: uppercase;
         letter-spacing: 0.5em;
         display: inline-block;
         border: 4px double rgba(255, 255, 255, 0.25);
         border-width: 4px 0;
         padding: 1.5em 0em;
-        position: absolute;
-        top: 18%;
         left: 50%;
         width: 40em;
-        margin: 0 0 0 -20em;
+      }
 
-        span {
-          font: 700 4em/1 "Oswald", sans-serif;
-          letter-spacing: 0;
-          padding: 0.25em 0 0.325em;
-          display: block;
-          margin: 0 auto;
-          text-shadow: 0 0 80px rgba(255, 255, 255, 0.5);
+      #q3-language span {
+        font-family: cursive;
+        font: 700 4em/1 "Oswald", sans-serif;
+        letter-spacing: 0;
+        padding: 0.25em 0 0.325em;
+        display: block;
+        margin: 0 auto;
+        text-shadow: 0 0 80px rgba(255, 255, 255, 0.5);
 
-          /* Clip Background Image */
+        background: url(https://i.ibb.co/RDTnNrT/animated-text-fill.png)
+          repeat-y;
+        -webkit-background-clip: text;
+        background-clip: text;
 
-          background: url(https://i.ibb.co/RDTnNrT/animated-text-fill.png)
-            repeat-y;
-          -webkit-background-clip: text;
-          background-clip: text;
+        -webkit-text-fill-color: transparent;
+        -webkit-animation: aitf 80s linear infinite;
 
-          /* Animate Background Image */
-
-          -webkit-text-fill-color: transparent;
-          -webkit-animation: aitf 80s linear infinite;
-
-          /* Activate hardware acceleration for smoother animations */
-
-          -webkit-transform: translate3d(0, 0, 0);
-          -webkit-backface-visibility: hidden;
-        }
+        -webkit-transform: translate3d(0, 0, 0);
+        -webkit-backface-visibility: hidden;
       }
 
       /* Animate Background Image */
@@ -65,16 +57,71 @@
           background-position: 100% 50%;
         }
       }
+
+      .calendar-container {
+        position: relative;
+        height: 100%;
+        min-height: 100vh;
+      }
+
+      .table-container {
+        width: calc(100% - 40px);
+        overflow-x: auto;
+        margin: 0 20px;
+        border: solid;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        border: 1px solid black;
+        text-align: center;
+        padding: 8px;
+      }
+      th {
+        background-color: #f2f2f2;
+      }
+      tr > th:first-child,
+      tr > td:first-child {
+        position: sticky;
+        left: 0;
+      }
+      tr td {
+        background: #fff;
+      }
     </style>
   </head>
   <body>
-    <p>
-      <span>
-        <img src="./assets/q3logo.png" style="width: 85px; height: 85px" />
-        Q3 Language
-      </span>
-      Cảm ơn bạn đã tin tưởng và sử dụng khoá học của chúng tôi
-    </p>
+    <div class="calendar-container">
+      <div id="q3-language">
+        <span>
+          <img src="./assets/q3logo.png" style="width: 85px; height: 85px" />
+          Q3 Language
+        </span>
+        Cảm ơn bạn đã tin tưởng và sử dụng khoá học của chúng tôi
+      </div>
+      <div class="table-container">
+        <table id="confirmTable">
+          <thead>
+            <tr id="table-header">
+              <th
+                style="
+                  min-width: 135px;
+                  background: rgba(5, 84, 180, 1);
+                  color: white;
+                "
+              >
+                Buổi
+              </th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
     <button
       type="button"
       class="btn-floating btn-large"
@@ -85,17 +132,15 @@
         padding: 0 16px;
         position: fixed;
         position: absolute;
-        bottom: 16px;
-        right: 16px;
+        bottom: 8px;
+        right: 20px;
+        height: 30px;
+        line-height: 30px;
       "
     >
       Trở về trang thông tin cá nhân
     </button>
     <script src="./libs/materialize.min.js"></script>
-    <script>
-      function backToCalendar() {
-        window.location.href = "user.html";
-      }
-    </script>
+    <script src="./js/thanks.js"></script>
   </body>
 </html>

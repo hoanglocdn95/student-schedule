@@ -1,11 +1,22 @@
 const GOOGLE_API_URL =
-  "https://script.google.com/macros/s/AKfycbweTUZ5qJLgHiZmdMI6kdTpyL3MPQHIcKLYXzFoTOKrumfjI2FuEmRK5x763eOoLoJRcg/exec";
+  "https://script.google.com/macros/s/AKfycbyVdHUCm6bsDoTne7tCJBHQO0fHirLUkadrljWoHU-U8HmIbKg1nBlzOv-ChhUnQ6rbAg/exec";
 
 const REMAIN_TIME_TO_EDIT = 5;
 
 let isAllowEdit = true;
 
 let currentScheduledData = Array.from({ length: 3 }, () => Array(7).fill(""));
+
+const useInfo = JSON.parse(sessionStorage.getItem("user_info"));
+
+const isTrainer = useInfo.type === "trainer_info";
+
+if (isTrainer) {
+  document.getElementById("navItem").innerHTML =
+    '<a href="trainer.html">Trainer</a>';
+} else {
+  document.getElementById("navItem").innerHTML = '<a href="user.html">User</a>';
+}
 
 function generateHeaders() {
   let today = new Date();

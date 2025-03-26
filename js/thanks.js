@@ -1,5 +1,6 @@
-const GOOGLE_API_URL =
-  "https://script.google.com/macros/s/AKfycbyVdHUCm6bsDoTne7tCJBHQO0fHirLUkadrljWoHU-U8HmIbKg1nBlzOv-ChhUnQ6rbAg/exec";
+function backToCalendar() {
+  window.location.href = "user.html";
+}
 
 const scheduleData = JSON.parse(sessionStorage.getItem("scheduleData"));
 const useInfo = JSON.parse(sessionStorage.getItem("user_info"));
@@ -19,57 +20,20 @@ scheduleData.forEach((row, index) => {
   // Thêm cột "Buổi"
   const timeSlotCell = document.createElement("td");
   timeSlotCell.textContent = timeSlots[index];
-  timeSlotCell.style = "background: #07bcd0; font-weight: bold;";
+  timeSlotCell.style =
+    "background:rgba(5, 84, 180, 1); font-weight: bold; color: white;";
   tr.appendChild(timeSlotCell);
 
   // Thêm dữ liệu cho các ngày
   row.forEach((cell) => {
     const td = document.createElement("td");
     td.textContent = cell;
+    td.style = "color: black; font-weight: bold";
     tr.appendChild(td);
   });
 
   tbody.appendChild(tr);
 });
-
-function goBack() {
-  window.location.href = "calendar.html";
-}
-
-function addUserInfoToSchedule(scheduleData) {
-  return scheduleData.map((row) =>
-    row.map((cell) => {
-      if (cell.trim() !== "") {
-        return `${name} - ${timezone} - ${email} (${cell})`;
-      }
-      return cell;
-    })
-  );
-}
-
-function submitToGoogleSheets() {
-  const updatedSchedule = addUserInfoToSchedule(scheduleData);
-  const loadingOverlay = document.getElementById("loadingOverlay");
-  loadingOverlay.style.display = "flex";
-
-  fetch(GOOGLE_API_URL, {
-    redirect: "follow",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    method: "POST",
-    body: JSON.stringify({ scheduledData: updatedSchedule, timezone }),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      loadingOverlay.style.display = "none";
-      M.toast({ html: "Dữ liệu đã được lưu!", classes: "green darken-1" });
-      setTimeout(() => {
-        window.location.href = "thanks.html";
-      }, 1000);
-    })
-    .catch((error) => {
-      console.error("error:", error);
-    });
-}
 
 function generateHeaders() {
   let today = new Date();
@@ -109,8 +73,3 @@ document.addEventListener("DOMContentLoaded", function () {
     window.location.href = "user.html";
   }
 });
-
-function logout() {
-  sessionStorage.clear();
-  window.location.href = "index.html";
-}

@@ -1,3 +1,8 @@
+const sheetInfoName = {
+  student: "User_Information",
+  trainer: "Trainer_Information",
+};
+
 function doPost(e) {
   try {
     // ✅ Xử lý request OPTIONS (Preflight CORS)
@@ -9,7 +14,9 @@ function doPost(e) {
 
     switch (data.type) {
       case "user_info":
-        return handleUserInfoType(data);
+        return handleUserInfoType(data, "student");
+      case "trainer_info":
+        return handleUserInfoType(data, "trainer");
       case "login":
         return handleLogin(data);
       default:
@@ -35,38 +42,32 @@ function getUser(email) {
     ).setMimeType(ContentService.MimeType.JSON);
   }
 
-  const sheet =
-    SpreadsheetApp.getActiveSpreadsheet().getSheetByName("User_Information");
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
+    sheetInfoName.student
+  );
   const data = sheet.getDataRange().getValues();
   const headers = data[0];
 
   const userKeys = {
     1: "name",
-    3: "timezone",
-    4: "pteExamDate",
-    5: "examBooked",
-    6: "notes",
-    7: "minHoursPerWeek",
-    8: "maxHoursPerWeek",
-    9: "minHoursPerSession",
-    10: "maxHoursPerSession",
+    3: "facebook",
+    4: "timezone",
+    5: "pteExamDate",
+    6: "examBooked",
+    7: "notes",
+    8: "minHoursPerWeek",
+    9: "maxHoursPerWeek",
+    10: "minHoursPerSession",
+    11: "maxHoursPerSession",
   };
 
   for (let i = 1; i < data.length; i++) {
     if (data[i][2] && data[i][2] === email) {
       const userData = {};
       headers.forEach((_, index) => {
-        if (index === 4) {
-          logToSheet(
-            "pteExamDate: " +
-              data[i][index] +
-              "---" +
-              getFormattedDate(data[i][index])
-          );
-        }
         if (userKeys[index]) {
           userData[userKeys[index]] =
-            index === 4 ? getFormattedDate(data[i][index]) : data[i][index];
+            index === 5 ? getFormattedDate(data[i][index]) : data[i][index];
         }
       });
 
@@ -78,6 +79,45 @@ function getUser(email) {
 
   return ContentService.createTextOutput(
     JSON.stringify({ success: false, message: "User not found" })
+  ).setMimeType(ContentService.MimeType.JSON);
+}
+
+function getTrainer(email) {
+  if (!email) {
+    return ContentService.createTextOutput(
+      JSON.stringify({ success: false, error: "Missing email parameter" })
+    ).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
+    sheetInfoName.trainer
+  );
+  const data = sheet.getDataRange().getValues();
+  const headers = data[0];
+
+  const trainerKeys = {
+    1: "name",
+    3: "facebook",
+    4: "timezone",
+  };
+
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][2] && data[i][2] === email) {
+      const trainerData = {};
+      headers.forEach((_, index) => {
+        if (trainerKeys[index]) {
+          trainerData[trainerKeys[index]] = data[i][index];
+        }
+      });
+
+      return ContentService.createTextOutput(
+        JSON.stringify({ success: true, user: trainerData })
+      ).setMimeType(ContentService.MimeType.JSON);
+    }
+  }
+
+  return ContentService.createTextOutput(
+    JSON.stringify({ success: false, message: "Trainer not found" })
   ).setMimeType(ContentService.MimeType.JSON);
 }
 
@@ -142,6 +182,10 @@ function doGet(e) {
     return getUser(e.parameter.email);
   }
 
+  if (type === "get_trainer") {
+    return getTrainer(e.parameter.email);
+  }
+
   return ContentService.createTextOutput(
     JSON.stringify({ success: false, message: "Missing type in parameter" })
   ).setMimeType(ContentService.MimeType.JSON);
@@ -174,10 +218,9 @@ function addCorsHeaders(response) {
   return response;
 }
 
-// ✅ Hàm xử lý dữ liệu "user_info"
-function handleUserInfoType(data) {
+function handleUserInfoType(data, userType) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName("User_Information");
+  var sheet = ss.getSheetByName(sheetInfoName[userType]);
 
   if (!sheet) {
     return sendErrorResponse("sheet_not_found");
@@ -198,18 +241,24 @@ function handleUserInfoType(data) {
     }
   }
 
-  var newRowData = [
-    data.name,
-    data.email,
-    data.timezone,
-    data.pteExamDate,
-    data.examBooked ? "Đã book" : "Chưa book",
-    data.notes,
-    data.minHoursPerWeek,
-    data.maxHoursPerWeek,
-    data.minHoursPerSession,
-    data.maxHoursPerSession,
-  ];
+  var newRowData = [];
+  if (userType === "student") {
+    newRowData = [
+      data.name,
+      data.email,
+      data.facebook,
+      data.timezone,
+      data.pteExamDate,
+      data.examBooked ? "Đã book" : "Chưa book",
+      data.notes,
+      data.minHoursPerWeek,
+      data.maxHoursPerWeek,
+      data.minHoursPerSession,
+      data.maxHoursPerSession,
+    ];
+  } else if (userType === "trainer") {
+    newRowData = [data.name, data.email, data.facebook, data.timezone];
+  }
 
   if (foundRow === -1) {
     sheet.appendRow(newRowData);
@@ -222,23 +271,30 @@ function handleUserInfoType(data) {
 
 // ✅ Hàm xử lý dữ liệu "login"
 function handleLogin(requestData) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName("User_Information");
+  const userType = requestData.userType;
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  const sheet = ss.getSheetByName(sheetInfoName[userType]);
 
   if (!sheet) {
     return sendErrorResponse("sheet_not_found");
   }
 
-  var email = requestData.email;
-  var password = requestData.password;
+  const passwordColumn = {
+    student: 10,
+    trainer: 3,
+  };
+
+  const email = requestData.email;
+  const password = requestData.password;
 
   var lastRow = sheet.getLastRow();
-  var dataRange = sheet.getRange(3, 3, lastRow - 1, 10);
+  var dataRange = sheet.getRange(3, 3, lastRow - 1, 11);
   var userData = dataRange.getValues();
 
-  for (var i = 0; i < userData.length; i++) {
-    var storedEmail = userData[i][0];
-    var storedPassword = userData[i][9];
+  for (let i = 0; i < userData.length; i++) {
+    const storedEmail = userData[i][0];
+    const storedPassword = userData[i][passwordColumn[userType]];
 
     if (storedEmail && storedEmail === email) {
       return storedPassword.toString() === password.toString()

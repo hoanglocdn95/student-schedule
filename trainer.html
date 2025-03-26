@@ -87,7 +87,7 @@
         "
       >
         <ul class="left">
-          <li class="active"><a>User</a></li>
+          <li class="active"><a>Trainer</a></li>
           <li id="goCalendar" style="display: none">
             <a href="calendar.html">Calendar</a>
           </li>
@@ -136,57 +136,6 @@
           </select>
         </div>
 
-        <label for="pteExamDate">Ngày định thi PTE</label>
-        <div class="input-field">
-          <input type="date" id="pteExamDate" />
-        </div>
-
-        <p>
-          <label>
-            <input type="checkbox" id="examBooked" />
-            <span>Đã book lịch thi chưa?</span>
-          </label>
-        </p>
-
-        <label for="notes">Ghi chú cho Q3 Language</label>
-        <div class="input-field">
-          <textarea id="notes" class="materialize-textarea"></textarea>
-        </div>
-
-        <label for="minHoursPerWeek">Số giờ học tối thiểu / tuần</label>
-        <div class="input-field">
-          <input type="number" id="minHoursPerWeek" min="1" max="10" required />
-        </div>
-
-        <label for="maxHoursPerWeek">Số giờ học tối đa / tuần</label>
-        <div class="input-field">
-          <input type="number" id="maxHoursPerWeek" min="1" max="12" required />
-        </div>
-
-        <label for="minHoursPerSession">Số giờ học tối thiểu / buổi</label>
-        <div class="input-field">
-          <input
-            type="number"
-            id="minHoursPerSession"
-            min="1"
-            max="1.5"
-            step="0.5"
-            required
-          />
-        </div>
-
-        <label for="maxHoursPerSession">Số giờ học tối đa / buổi</label>
-        <div class="input-field">
-          <input
-            type="number"
-            id="maxHoursPerSession"
-            min="1"
-            max="1.5"
-            step="0.5"
-            required
-          />
-        </div>
-
         <div class="center">
           <button type="submit" class="btn btn-primary" id="btn-save">
             Save & Next
@@ -212,6 +161,6 @@
 
     <!-- Materialize JS -->
     <script src="./libs/materialize.min.js"></script>
-    <script src="./js/user.js"></script>
+    <script src="./js/trainer.js"></script>
   </body>
 </html>

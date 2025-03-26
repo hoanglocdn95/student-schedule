@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   const storedEmail = sessionStorage.getItem("user_email");
   if (storedEmail) {
     emailField.value = storedEmail;
-    await fetchUserData(storedEmail);
+    await fetchTrainerData(storedEmail);
   }
 
   const form = document.getElementById("userInfoForm");
@@ -18,44 +18,12 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     event.preventDefault();
 
-    const minHoursPerSession =
-      document.getElementById("minHoursPerSession").value;
-
-    const maxHoursPerSession =
-      document.getElementById("maxHoursPerSession").value;
-
-    const minHoursPerWeek = document.getElementById("minHoursPerWeek").value;
-    const maxHoursPerWeek = document.getElementById("maxHoursPerWeek").value;
-
-    if (+minHoursPerWeek > +maxHoursPerWeek) {
-      M.toast({
-        html: "Vui lòng nhập Số giờ học tối thiểu / tuần nhỏ hơn hoặc bằng Số giờ học tối đa / tuần",
-        classes: "yellow darken-1",
-      });
-      return;
-    }
-
-    if (+minHoursPerSession > +maxHoursPerSession) {
-      M.toast({
-        html: "Vui lòng nhập Số giờ học tối thiểu / buổi nhỏ hơn hoặc bằng Số giờ học tối đa / buổi",
-        classes: "yellow darken-1",
-      });
-      return;
-    }
-
     const userData = {
-      type: "user_info",
+      type: "trainer_info",
       name: document.getElementById("name").value || "",
       email: document.getElementById("email").value,
       facebook: document.getElementById("facebook").value || "",
       timezone: document.getElementById("timezone").value || "",
-      pteExamDate: document.getElementById("pteExamDate").value || "",
-      examBooked: document.getElementById("examBooked").checked,
-      notes: document.getElementById("notes").value || "",
-      minHoursPerWeek: minHoursPerWeek || "",
-      maxHoursPerWeek: maxHoursPerWeek || "",
-      minHoursPerSession: minHoursPerSession.toString().replace(".", ","),
-      maxHoursPerSession: maxHoursPerSession.toString().replace(".", ","),
     };
 
     if (compareObjects(userInStorage, userData)) {
@@ -85,12 +53,12 @@ document.addEventListener("DOMContentLoaded", async function () {
   });
 });
 
-async function fetchUserData(email) {
+async function fetchTrainerData(email) {
   const loadingOverlay = document.getElementById("loadingOverlay");
   loadingOverlay.style.display = "flex";
   try {
     const response = await fetch(
-      `${GOOGLE_API_URL}?type=get_user&email=${email}`,
+      `${GOOGLE_API_URL}?type=get_trainer&email=${email}`,
       {
         method: "GET",
         redirect: "follow",
@@ -99,19 +67,7 @@ async function fetchUserData(email) {
     );
     const data = await response.json();
     if (data.success && data.user) {
-      const {
-        name,
-        pteExamDate,
-        notes,
-        examBooked,
-        timezone,
-        minHoursPerWeek,
-        maxHoursPerWeek,
-        minHoursPerSession,
-        maxHoursPerSession,
-        facebook,
-      } = data.user;
-      // facebook: document.getElementById("facebook").value || "",
+      const { name, pteExamDate, timezone, facebook } = data.user;
 
       if (pteExamDate) {
         const dateObj = new Date(pteExamDate);
@@ -127,14 +83,6 @@ async function fetchUserData(email) {
       document.getElementById("name").value = name || "";
       document.getElementById("facebook").value = facebook || "";
       document.getElementById("timezone").value = timezone || "";
-      document.getElementById("examBooked").checked = examBooked === "Đã book";
-      document.getElementById("notes").value = notes || "";
-      document.getElementById("minHoursPerWeek").value = minHoursPerWeek || "";
-      document.getElementById("maxHoursPerWeek").value = maxHoursPerWeek || "";
-      document.getElementById("minHoursPerSession").value =
-        minHoursPerSession || "";
-      document.getElementById("maxHoursPerSession").value =
-        maxHoursPerSession || "";
     }
     loadingOverlay.style.display = "none";
   } catch (error) {
@@ -164,11 +112,6 @@ function compareObjects(obj1, obj2) {
   return commonKeys.every((key) => {
     let val1 = obj1[key];
     let val2 = obj2[key];
-
-    if (key === "pteExamDate") {
-      val1 = new Date(val1).toISOString().split("T")[0];
-      val2 = new Date(val2).toISOString().split("T")[0];
-    }
 
     if (typeof val1 === "number" || typeof val2 === "number") {
       val1 = val1.toString().replace(".", ",");
