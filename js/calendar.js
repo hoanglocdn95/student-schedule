@@ -1,5 +1,5 @@
 const GOOGLE_API_URL =
-  "https://script.google.com/macros/s/AKfycbyS__brQJCXDO1AOteOV1BZ1eCfRlI-3pGoFCMWFXIXsdHh4LqK7FBaplsxnR4WFhqtXA/exec";
+  "https://script.google.com/macros/s/AKfycbwd0J66OkCFcEyqSX4X28zbphq5_Rmvk3QVW0Q9ARXOMBrFbiXMeKZl3qc3Fh4mPSEIwg/exec";
 
 const REMAIN_TIME_TO_EDIT = 5;
 
@@ -245,14 +245,15 @@ async function initTableData() {
       console.error("Không có dữ liệu hoặc dữ liệu không hợp lệ.");
       return;
     }
+    const dataTable = data ? data : scheduleData;
     console.log(" initTableData ~ data:", data);
 
-    for (let i = 0; i < data.length; i++) {
-      for (let j = 0; j < data[i].length; j++) {
+    for (let i = 0; i < dataTable.length; i++) {
+      for (let j = 0; j < dataTable[i].length; j++) {
         if (scheduleData) {
           currentScheduledData[i][j] = scheduleData[i][j];
         } else {
-          let cellData = data[i][j].trim();
+          let cellData = dataTable[i][j].trim();
 
           if (!cellData) continue;
 

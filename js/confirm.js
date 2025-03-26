@@ -1,5 +1,5 @@
 const GOOGLE_API_URL =
-  "https://script.google.com/macros/s/AKfycbyS__brQJCXDO1AOteOV1BZ1eCfRlI-3pGoFCMWFXIXsdHh4LqK7FBaplsxnR4WFhqtXA/exec";
+  "https://script.google.com/macros/s/AKfycbwd0J66OkCFcEyqSX4X28zbphq5_Rmvk3QVW0Q9ARXOMBrFbiXMeKZl3qc3Fh4mPSEIwg/exec";
 
 const scheduleData = JSON.parse(sessionStorage.getItem("scheduleData"));
 const useInfo = JSON.parse(sessionStorage.getItem("user_info"));
@@ -76,7 +76,7 @@ function submitToGoogleSheets() {
       loadingOverlay.style.display = "none";
       M.toast({ html: "Dữ liệu đã được lưu!", classes: "green darken-1" });
       setTimeout(() => {
-        window.location.href = "thanks.html";
+        // window.location.href = "thanks.html";
       }, 1000);
     })
     .catch((error) => {

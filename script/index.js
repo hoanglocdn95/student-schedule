@@ -14,6 +14,13 @@ const firstColColor = {
   },
 };
 
+const formatDate = (date) =>
+  Utilities.formatDate(
+    date,
+    Session.getScriptTimeZone() || "GMT",
+    "dd/MM/yyyy"
+  );
+
 function doPost(e) {
   try {
     // ✅ Xử lý request OPTIONS (Preflight CORS)
@@ -147,13 +154,6 @@ function getCalendar(userType) {
 
   var sunday = new Date(monday);
   sunday.setDate(monday.getDate() + 6);
-
-  var formatDate = (date) =>
-    Utilities.formatDate(
-      date,
-      Session.getScriptTimeZone() || "GMT",
-      "dd/MM/yyyy"
-    );
 
   var sheetName = `${userType.toUpperCase()}:${formatDate(
     monday
@@ -385,8 +385,6 @@ function handleCalendarType(data, userType) {
   const toTime = formatDate(sunday);
   const typePrefix = userType.toUpperCase();
 
-  var formatDate = (date) =>
-    Utilities.formatDate(date, Session.getScriptTimeZone(), "dd/MM/yyyy");
   var sheetName = `${typePrefix}:${fromTime} - ${toTime}`;
   var sheetNameWithTimezone = `${typePrefix}:${fromTime} - ${toTime} - ${timezone}`;
 
