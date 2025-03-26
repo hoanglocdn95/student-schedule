@@ -3,6 +3,17 @@ const sheetInfoName = {
   trainer: "Trainer_Information",
 };
 
+const firstColColor = {
+  student: {
+    bg: "#07bdd0",
+    text: "#000000",
+  },
+  trainer: {
+    bg: "#ff9700",
+    text: "#ffffff",
+  },
+};
+
 function doPost(e) {
   try {
     // ✅ Xử lý request OPTIONS (Preflight CORS)
@@ -19,8 +30,12 @@ function doPost(e) {
         return handleUserInfoType(data, "trainer");
       case "login":
         return handleLogin(data);
+      case "handle_student_calendar":
+        return handleCalendarType(data, "student");
+      case "handle_trainer_calendar":
+        return handleCalendarType(data, "trainer");
       default:
-        return handleCalendarType(data);
+        return handleCalendarType(data, "all");
     }
   } catch (error) {
     return sendErrorResponse(error.message);
@@ -121,7 +136,7 @@ function getTrainer(email) {
   ).setMimeType(ContentService.MimeType.JSON);
 }
 
-function getCalendar() {
+function getCalendar(userType) {
   var currentDate = new Date();
 
   var monday = new Date(currentDate);
@@ -139,7 +154,10 @@ function getCalendar() {
       Session.getScriptTimeZone() || "GMT",
       "dd/MM/yyyy"
     );
-  var sheetName = `${formatDate(monday)} - ${formatDate(sunday)}`;
+
+  var sheetName = `${userType.toUpperCase()}:${formatDate(
+    monday
+  )} - ${formatDate(sunday)}`;
 
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
 
@@ -175,7 +193,7 @@ function doGet(e) {
   const type = e.parameter.type;
 
   if (type === "get_calendar") {
-    return getCalendar();
+    return getCalendar("student");
   }
 
   if (type === "get_user") {
@@ -184,6 +202,10 @@ function doGet(e) {
 
   if (type === "get_trainer") {
     return getTrainer(e.parameter.email);
+  }
+
+  if (type === "get_trainer_calendar") {
+    return getCalendar("trainer");
   }
 
   return ContentService.createTextOutput(
@@ -341,7 +363,7 @@ function updateCellData(cellContent, newUser, newEmail, newTimes) {
   return newLines.join("\n");
 }
 
-function handleCalendarType(data) {
+function handleCalendarType(data, userType) {
   const { scheduledData, timezone } = data;
 
   var currentDate = new Date();
@@ -359,17 +381,19 @@ function handleCalendarType(data) {
   var sunday = new Date(monday);
   sunday.setDate(monday.getDate() + 6);
 
+  const fromTime = formatDate(monday);
+  const toTime = formatDate(sunday);
+  const typePrefix = userType.toUpperCase();
+
   var formatDate = (date) =>
     Utilities.formatDate(date, Session.getScriptTimeZone(), "dd/MM/yyyy");
-  var sheetName = `${formatDate(monday)} - ${formatDate(sunday)}`;
-  var sheetNameWithTimezone = `${formatDate(monday)} - ${formatDate(
-    sunday
-  )} - ${timezone}`;
+  var sheetName = `${typePrefix}:${fromTime} - ${toTime}`;
+  var sheetNameWithTimezone = `${typePrefix}:${fromTime} - ${toTime} - ${timezone}`;
 
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet =
     ss.getSheetByName(sheetName) ||
-    createSheetWithHeaders(ss, sheetName, monday, sunday);
+    createSheetWithHeaders(ss, sheetName, monday, sunday, userType);
 
   // filter Timezone from data
   var sheetWithTimezone =
@@ -379,7 +403,8 @@ function handleCalendarType(data) {
       sheetNameWithTimezone,
       monday,
       sunday,
-      timezone
+      timezone,
+      userType
     );
 
   generateSheetBody(2, 2, scheduledData, sheet);
@@ -399,7 +424,7 @@ function logToSheet(message) {
   logSheet.appendRow([new Date(), message]);
 }
 
-function createSheetWithHeaders(ss, sheetName, monday, sunday) {
+function createSheetWithHeaders(ss, sheetName, monday, sunday, userType) {
   var sheet = ss.insertSheet(sheetName);
 
   // Danh sách tên ngày trong tuần
@@ -443,12 +468,12 @@ function createSheetWithHeaders(ss, sheetName, monday, sunday) {
     sheet.getRange(i + 2, 1).setValue(periods[i]);
   }
 
-  // Định dạng cột đầu tiên: In đậm, căn giữa, nền #07bdd0
   var firstColumnRange = sheet.getRange(1, 1, periods.length + 1, 1);
   firstColumnRange
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
-    .setBackground("#07bdd0");
+    .setBackground(firstColColor[userType].bg)
+    .setFontColor(firstColColor[userType].text);
 
   // Định dạng viền cho toàn bộ bảng
   var tableRange = sheet.getRange(1, 1, periods.length + 1, headers.length);
@@ -474,7 +499,8 @@ function createSheetWithHeadersWithTimezone(
   sheetName,
   monday,
   sunday,
-  timezone
+  timezone,
+  userType
 ) {
   var sheet = ss.insertSheet(sheetName);
 
@@ -491,13 +517,13 @@ function createSheetWithHeadersWithTimezone(
   var titleRange = sheet.getRange(1, 1, 1, 3);
   titleRange.merge();
   titleRange
-    .setValue(timezone)
+    .setValue(`${userType.toUpperCase()} - ${timezone}`)
     .setFontWeight("bold")
     .setFontSize(20)
     .setHorizontalAlignment("center")
     .setVerticalAlignment("middle")
-    .setBackground("#FF9800") // Màu cam
-    .setFontColor("#FFFFFF"); // Chữ trắng
+    .setBackground(firstColColor[userType].bg)
+    .setFontColor(firstColColor[userType].text);
 
   // Hàng thứ 2 để trống
   sheet.getRange(2, 1, 1, 10).setValue("");
@@ -535,13 +561,13 @@ function createSheetWithHeadersWithTimezone(
     sheet.getRange(i + 4, 1).setValue(periods[i]);
   }
 
-  // Định dạng cột đầu tiên: In đậm, căn giữa, nền #07bdd0
   var firstColumnRange = sheet.getRange(3, 1, periods.length + 1, 1);
   firstColumnRange
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setVerticalAlignment("middle")
-    .setBackground("#07bdd0");
+    .setBackground(firstColColor[userType].bg)
+    .setFontColor(firstColColor[userType].text);
 
   // Định dạng viền cho toàn bộ bảng
   var tableRange = sheet.getRange(3, 1, periods.length + 1, headers.length);

@@ -1,9 +1,18 @@
 const GOOGLE_API_URL =
-  "https://script.google.com/macros/s/AKfycbyVdHUCm6bsDoTne7tCJBHQO0fHirLUkadrljWoHU-U8HmIbKg1nBlzOv-ChhUnQ6rbAg/exec";
+  "https://script.google.com/macros/s/AKfycbyS__brQJCXDO1AOteOV1BZ1eCfRlI-3pGoFCMWFXIXsdHh4LqK7FBaplsxnR4WFhqtXA/exec";
 
 const scheduleData = JSON.parse(sessionStorage.getItem("scheduleData"));
 const useInfo = JSON.parse(sessionStorage.getItem("user_info"));
-const { name, timezone } = useInfo;
+const { name, timezone, type } = useInfo;
+const isTrainer = type === "trainer_info";
+
+if (isTrainer) {
+  document.getElementById("navItem").innerHTML =
+    '<a href="trainer.html">Trainer</a>';
+} else {
+  document.getElementById("navItem").innerHTML = '<a href="user.html">User</a>';
+}
+
 const email = sessionStorage.getItem("user_email");
 const tbody = document.querySelector("#confirmTable tbody");
 
@@ -56,7 +65,11 @@ function submitToGoogleSheets() {
     redirect: "follow",
     headers: { "Content-Type": "text/plain;charset=utf-8" },
     method: "POST",
-    body: JSON.stringify({ scheduledData: updatedSchedule, timezone }),
+    body: JSON.stringify({
+      scheduledData: updatedSchedule,
+      timezone,
+      type: isTrainer ? "handle_trainer_calendar" : "handle_student_calendar",
+    }),
   })
     .then((response) => response.json())
     .then((data) => {
@@ -106,7 +119,7 @@ document.addEventListener("DOMContentLoaded", function () {
     window.location.href = "index.html";
   }
   if (!sessionStorage.getItem("user_info")) {
-    window.location.href = "user.html";
+    window.location.href = isTrainer ? "trainer.html" : "user.html";
   }
 });
 

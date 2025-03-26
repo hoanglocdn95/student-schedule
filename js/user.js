@@ -1,5 +1,5 @@
 const GOOGLE_API_URL =
-  "https://script.google.com/macros/s/AKfycbyVdHUCm6bsDoTne7tCJBHQO0fHirLUkadrljWoHU-U8HmIbKg1nBlzOv-ChhUnQ6rbAg/exec";
+  "https://script.google.com/macros/s/AKfycbyS__brQJCXDO1AOteOV1BZ1eCfRlI-3pGoFCMWFXIXsdHh4LqK7FBaplsxnR4WFhqtXA/exec";
 
 document.addEventListener("DOMContentLoaded", async function () {
   const emailField = document.getElementById("email");

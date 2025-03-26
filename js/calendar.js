@@ -1,5 +1,5 @@
 const GOOGLE_API_URL =
-  "https://script.google.com/macros/s/AKfycbyVdHUCm6bsDoTne7tCJBHQO0fHirLUkadrljWoHU-U8HmIbKg1nBlzOv-ChhUnQ6rbAg/exec";
+  "https://script.google.com/macros/s/AKfycbyS__brQJCXDO1AOteOV1BZ1eCfRlI-3pGoFCMWFXIXsdHh4LqK7FBaplsxnR4WFhqtXA/exec";
 
 const REMAIN_TIME_TO_EDIT = 5;
 
@@ -8,7 +8,6 @@ let isAllowEdit = true;
 let currentScheduledData = Array.from({ length: 3 }, () => Array(7).fill(""));
 
 const useInfo = JSON.parse(sessionStorage.getItem("user_info"));
-
 const isTrainer = useInfo.type === "trainer_info";
 
 if (isTrainer) {
@@ -226,13 +225,19 @@ async function initTableData() {
   }
 
   try {
-    let response = await fetch(`${GOOGLE_API_URL}?type=get_calendar`, {
-      redirect: "follow",
-      method: "GET",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-    });
+    let response = await fetch(
+      `${GOOGLE_API_URL}?type=${
+        isTrainer ? "get_trainer_calendar" : "get_calendar"
+      }`,
+      {
+        redirect: "follow",
+        method: "GET",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+      }
+    );
 
     const res = await response.json();
+    console.log(" initTableData ~ res:", res);
     loadingOverlay.style.display = "none";
     const data = res.data;
 
@@ -240,6 +245,7 @@ async function initTableData() {
       console.error("Không có dữ liệu hoặc dữ liệu không hợp lệ.");
       return;
     }
+    console.log(" initTableData ~ data:", data);
 
     for (let i = 0; i < data.length; i++) {
       for (let j = 0; j < data[i].length; j++) {
@@ -283,7 +289,7 @@ document.addEventListener("DOMContentLoaded", function () {
     window.location.href = "index.html";
   }
   if (!sessionStorage.getItem("user_info")) {
-    window.location.href = "user.html";
+    window.location.href = isTrainer ? "trainer.html" : "user.html";
   }
 });
 

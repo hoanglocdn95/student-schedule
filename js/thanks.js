@@ -1,10 +1,8 @@
-function backToCalendar() {
-  window.location.href = "user.html";
-}
-
 const scheduleData = JSON.parse(sessionStorage.getItem("scheduleData"));
 const useInfo = JSON.parse(sessionStorage.getItem("user_info"));
-const { name, timezone } = useInfo;
+const { name, timezone, type } = useInfo;
+const isTrainer = type === "trainer_info";
+console.log(" isTrainer:", isTrainer);
 const email = sessionStorage.getItem("user_email");
 const tbody = document.querySelector("#confirmTable tbody");
 
@@ -70,6 +68,10 @@ document.addEventListener("DOMContentLoaded", function () {
     window.location.href = "index.html";
   }
   if (!sessionStorage.getItem("user_info")) {
-    window.location.href = "user.html";
+    window.location.href = isTrainer ? "trainer.html" : "user.html";
   }
 });
+
+function backToCalendar() {
+  window.location.href = isTrainer ? "trainer.html" : "user.html";
+}
