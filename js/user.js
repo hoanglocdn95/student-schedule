@@ -1,5 +1,5 @@
-const GOOGLE_API_URL =
-  "https://script.google.com/macros/s/AKfycbwd0J66OkCFcEyqSX4X28zbphq5_Rmvk3QVW0Q9ARXOMBrFbiXMeKZl3qc3Fh4mPSEIwg/exec";
+const ACCOUNT_API_URL =
+  "https://script.google.com/macros/s/AKfycbwhrXjVvSpS05ehLyHYs971_uRZS-rIav8W0P6TqP3cs5rigd4E-bIKnbCN-ACFxtsYrQ/exec";
 
 document.addEventListener("DOMContentLoaded", async function () {
   const emailField = document.getElementById("email");
@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     loadingOverlay.style.display = "flex";
 
-    await fetch(GOOGLE_API_URL, {
+    await fetch(ACCOUNT_API_URL, {
       method: "POST",
       redirect: "follow",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -90,7 +90,7 @@ async function fetchUserData(email) {
   loadingOverlay.style.display = "flex";
   try {
     const response = await fetch(
-      `${GOOGLE_API_URL}?type=get_user&email=${email}`,
+      `${ACCOUNT_API_URL}?type=get_user&email=${email}`,
       {
         method: "GET",
         redirect: "follow",

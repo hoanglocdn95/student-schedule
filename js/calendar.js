@@ -1,5 +1,5 @@
-const GOOGLE_API_URL =
-  "https://script.google.com/macros/s/AKfycbwd0J66OkCFcEyqSX4X28zbphq5_Rmvk3QVW0Q9ARXOMBrFbiXMeKZl3qc3Fh4mPSEIwg/exec";
+const SCHEDULE_API_URL =
+  "https://script.google.com/macros/s/AKfycbzPRg-axjCT4R-6tDV5N9PcJ3VIiHk0EOKobk9Pbj4qgayIDkWrFautirWm7dJo3ejpkA/exec";
 
 const REMAIN_TIME_TO_EDIT = 5;
 
@@ -226,7 +226,7 @@ async function initTableData() {
 
   try {
     let response = await fetch(
-      `${GOOGLE_API_URL}?type=${
+      `${SCHEDULE_API_URL}?type=${
         isTrainer ? "get_trainer_calendar" : "get_calendar"
       }`,
       {
@@ -237,7 +237,6 @@ async function initTableData() {
     );
 
     const res = await response.json();
-    console.log(" initTableData ~ res:", res);
     loadingOverlay.style.display = "none";
     const data = res.data;
 
@@ -246,7 +245,6 @@ async function initTableData() {
       return;
     }
     const dataTable = data ? data : scheduleData;
-    console.log(" initTableData ~ data:", data);
 
     for (let i = 0; i < dataTable.length; i++) {
       for (let j = 0; j < dataTable[i].length; j++) {

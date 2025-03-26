@@ -1,5 +1,5 @@
-const GOOGLE_API_URL =
-  "https://script.google.com/macros/s/AKfycbwd0J66OkCFcEyqSX4X28zbphq5_Rmvk3QVW0Q9ARXOMBrFbiXMeKZl3qc3Fh4mPSEIwg/exec";
+const SCHEDULE_API_URL =
+  "https://script.google.com/macros/s/AKfycbzPRg-axjCT4R-6tDV5N9PcJ3VIiHk0EOKobk9Pbj4qgayIDkWrFautirWm7dJo3ejpkA/exec";
 
 const scheduleData = JSON.parse(sessionStorage.getItem("scheduleData"));
 const useInfo = JSON.parse(sessionStorage.getItem("user_info"));
@@ -61,7 +61,7 @@ function submitToGoogleSheets() {
   const loadingOverlay = document.getElementById("loadingOverlay");
   loadingOverlay.style.display = "flex";
 
-  fetch(GOOGLE_API_URL, {
+  fetch(SCHEDULE_API_URL, {
     redirect: "follow",
     headers: { "Content-Type": "text/plain;charset=utf-8" },
     method: "POST",
@@ -76,7 +76,7 @@ function submitToGoogleSheets() {
       loadingOverlay.style.display = "none";
       M.toast({ html: "Dữ liệu đã được lưu!", classes: "green darken-1" });
       setTimeout(() => {
-        // window.location.href = "thanks.html";
+        window.location.href = "thanks.html";
       }, 1000);
     })
     .catch((error) => {
