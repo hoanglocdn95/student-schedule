@@ -118,6 +118,8 @@ function getUser(email, userType) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
     SHEET_INFO_NAME[userType]
   );
+
+  LogToSheet("SHEET_INFO_NAME[userType]: " + SHEET_INFO_NAME[userType]);
   const data = sheet.getDataRange().getValues();
   const headers = data[0];
 
@@ -131,10 +133,11 @@ function getUser(email, userType) {
               data[i][index]
             );
           } else {
-            userData[USER_KEYS[index]] = data[i][index];
+            userData[USER_KEYS[userType][index]] = data[i][index];
           }
         }
       });
+      LogToSheet("userData[]: " + userData);
 
       return ContentService.createTextOutput(
         JSON.stringify({ success: true, user: userData })
