@@ -1,7 +1,39 @@
-const sheetInfoName = {
+const SHEET_INFO_NAME = {
   student: "User_Information",
   trainer: "Trainer_Information",
+  admin: "Admin_Information",
 };
+
+const USER_KEYS = {
+  student: {
+    1: "name",
+    3: "facebook",
+    4: "timezone",
+    5: "pteExamDate",
+    6: "examBooked",
+    7: "notes",
+    8: "minHoursPerWeek",
+    9: "maxHoursPerWeek",
+    10: "minHoursPerSession",
+    11: "maxHoursPerSession",
+  },
+  trainer: {
+    1: "name",
+    3: "facebook",
+    4: "timezone",
+  },
+  admin: {
+    1: "name",
+    3: "facebook",
+    4: "timezone",
+  },
+};
+
+function LogToSheet(message) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var logSheet = ss.getSheetByName("Logs") || ss.insertSheet("Logs");
+  logSheet.appendRow([new Date(), message]);
+}
 
 const formatDate = (date) =>
   Utilities.formatDate(
@@ -64,6 +96,8 @@ function doPost(e) {
         return handleUserInfoType(data, "student");
       case "trainer_info":
         return handleUserInfoType(data, "trainer");
+      case "admin_info":
+        return handleUserInfoType(data, "admin");
       case "login":
         return handleLogin(data);
       default:
@@ -74,7 +108,7 @@ function doPost(e) {
   }
 }
 
-function getUser(email) {
+function getUser(email, userType) {
   if (!email) {
     return ContentService.createTextOutput(
       JSON.stringify({ success: false, error: "Missing email parameter" })
@@ -82,31 +116,23 @@ function getUser(email) {
   }
 
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
-    sheetInfoName.student
+    SHEET_INFO_NAME[userType]
   );
   const data = sheet.getDataRange().getValues();
   const headers = data[0];
-
-  const userKeys = {
-    1: "name",
-    3: "facebook",
-    4: "timezone",
-    5: "pteExamDate",
-    6: "examBooked",
-    7: "notes",
-    8: "minHoursPerWeek",
-    9: "maxHoursPerWeek",
-    10: "minHoursPerSession",
-    11: "maxHoursPerSession",
-  };
 
   for (let i = 1; i < data.length; i++) {
     if (data[i][2] && data[i][2] === email) {
       const userData = {};
       headers.forEach((_, index) => {
-        if (userKeys[index]) {
-          userData[userKeys[index]] =
-            index === 5 ? getFormattedDate(data[i][index]) : data[i][index];
+        if (USER_KEYS[userType][index]) {
+          if (USER_KEYS[userType][index] === "pteExamDate") {
+            userData[USER_KEYS[userType][index]] = getFormattedDate(
+              data[i][index]
+            );
+          } else {
+            userData[USER_KEYS[index]] = data[i][index];
+          }
         }
       });
 
@@ -121,64 +147,26 @@ function getUser(email) {
   ).setMimeType(ContentService.MimeType.JSON);
 }
 
-function getTrainer(email) {
-  if (!email) {
-    return ContentService.createTextOutput(
-      JSON.stringify({ success: false, error: "Missing email parameter" })
-    ).setMimeType(ContentService.MimeType.JSON);
-  }
-
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
-    sheetInfoName.trainer
-  );
-  const data = sheet.getDataRange().getValues();
-  const headers = data[0];
-
-  const trainerKeys = {
-    1: "name",
-    3: "facebook",
-    4: "timezone",
-  };
-
-  for (let i = 1; i < data.length; i++) {
-    if (data[i][2] && data[i][2] === email) {
-      const trainerData = {};
-      headers.forEach((_, index) => {
-        if (trainerKeys[index]) {
-          trainerData[trainerKeys[index]] = data[i][index];
-        }
-      });
-
-      return ContentService.createTextOutput(
-        JSON.stringify({ success: true, user: trainerData })
-      ).setMimeType(ContentService.MimeType.JSON);
-    }
-  }
-
-  return ContentService.createTextOutput(
-    JSON.stringify({ success: false, message: "Trainer not found" })
-  ).setMimeType(ContentService.MimeType.JSON);
-}
-
 function doGet(e) {
   const type = e.parameter.type;
 
-  if (type === "get_user") {
-    return getUser(e.parameter.email);
+  switch (type) {
+    case "get_user":
+      return getUser(e.parameter.email, "student");
+    case "get_trainer":
+      return getUser(e.parameter.email, "trainer");
+    case "get_admin":
+      return getUser(e.parameter.email, "admin");
+    default:
+      return ContentService.createTextOutput(
+        JSON.stringify({ success: false, message: "Missing type in parameter" })
+      ).setMimeType(ContentService.MimeType.JSON);
   }
-
-  if (type === "get_trainer") {
-    return getTrainer(e.parameter.email);
-  }
-
-  return ContentService.createTextOutput(
-    JSON.stringify({ success: false, message: "Missing type in parameter" })
-  ).setMimeType(ContentService.MimeType.JSON);
 }
 
 function handleUserInfoType(data, userType) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName(sheetInfoName[userType]);
+  var sheet = ss.getSheetByName(SHEET_INFO_NAME[userType]);
 
   if (!sheet) {
     return sendErrorResponse("sheet_not_found");
@@ -214,7 +202,7 @@ function handleUserInfoType(data, userType) {
       data.minHoursPerSession,
       data.maxHoursPerSession,
     ];
-  } else if (userType === "trainer") {
+  } else if (userType === "trainer" || userType === "admin") {
     newRowData = [data.name, data.email, data.facebook, data.timezone];
   }
 
@@ -232,7 +220,7 @@ function handleLogin(requestData) {
   const userType = requestData.userType;
   const ss = SpreadsheetApp.getActiveSpreadsheet();
 
-  const sheet = ss.getSheetByName(sheetInfoName[userType]);
+  const sheet = ss.getSheetByName(SHEET_INFO_NAME[userType]);
 
   if (!sheet) {
     return sendErrorResponse("sheet_not_found");
@@ -241,6 +229,7 @@ function handleLogin(requestData) {
   const passwordColumn = {
     student: 10,
     trainer: 3,
+    admin: 3,
   };
 
   const email = requestData.email;
@@ -262,10 +251,4 @@ function handleLogin(requestData) {
   }
 
   return sendErrorResponse("email_not_found");
-}
-
-function logToSheet(message) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var logSheet = ss.getSheetByName("Logs") || ss.insertSheet("Logs");
-  logSheet.appendRow([new Date(), message]);
 }

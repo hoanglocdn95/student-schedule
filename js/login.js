@@ -1,5 +1,5 @@
 const ACCOUNT_API_URL =
-  "https://script.google.com/macros/s/AKfycbwhrXjVvSpS05ehLyHYs971_uRZS-rIav8W0P6TqP3cs5rigd4E-bIKnbCN-ACFxtsYrQ/exec";
+  "https://script.google.com/macros/s/AKfycbx8NMJQd7SJ8otQLNTlhtm6zVOsEn_wxMo_0_pDqRil42kcU_q3Rfebu0Os7nwVUgcNRA/exec";
 
 async function login() {
   const email = document.getElementById("emailInput").value.trim();
