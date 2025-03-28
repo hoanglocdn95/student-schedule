@@ -150,6 +150,62 @@ function getUser(email, userType) {
   ).setMimeType(ContentService.MimeType.JSON);
 }
 
+function getAllUsers() {
+  const trainerSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
+    SHEET_INFO_NAME.trainer
+  );
+
+  const trainerData = trainerSheet.getDataRange().getValues();
+  const trainerHeaders = trainerData[1];
+
+  let trainer = [];
+
+  for (let i = 2; i < trainerData.length; i++) {
+    let tData = {};
+
+    trainerHeaders.forEach((_, index) => {
+      if (USER_KEYS.trainer[index]) {
+        tData[USER_KEYS.trainer[index]] = trainerData[i][index];
+      }
+    });
+
+    trainer.push(tData);
+  }
+
+  LogToSheet("Total users fetched: " + trainer.length);
+
+  const studentSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
+    SHEET_INFO_NAME.student
+  );
+
+  const studentData = studentSheet.getDataRange().getValues();
+  const studentHeaders = studentData[1];
+
+  let student = [];
+
+  for (let i = 2; i < studentData.length; i++) {
+    let sData = {};
+
+    studentHeaders.forEach((_, index) => {
+      if (USER_KEYS.student[index]) {
+        if (USER_KEYS.student[index] === "pteExamDate") {
+          sData[USER_KEYS.student[index]] = getFormattedDate(
+            studentData[i][index]
+          );
+        } else {
+          sData[USER_KEYS.student[index]] = studentData[i][index];
+        }
+      }
+    });
+
+    student.push(sData);
+  }
+
+  return ContentService.createTextOutput(
+    JSON.stringify({ success: true, trainer, student })
+  ).setMimeType(ContentService.MimeType.JSON);
+}
+
 function doGet(e) {
   const type = e.parameter.type;
 
@@ -160,6 +216,8 @@ function doGet(e) {
       return getUser(e.parameter.email, "trainer");
     case "get_admin":
       return getUser(e.parameter.email, "admin");
+    case "get_all_user":
+      return getAllUsers();
     default:
       return ContentService.createTextOutput(
         JSON.stringify({ success: false, message: "Missing type in parameter" })
