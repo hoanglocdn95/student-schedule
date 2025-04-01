@@ -313,13 +313,12 @@ function generateSheetBody(startRow, startColumn, sheetData, currentSheet) {
   for (let i = 0; i < numRows; i++) {
     for (let j = 0; j < numCols; j++) {
       const newData = sheetData[i][j].trim();
+      const cellContent = existingData[i][j].trim();
+
       if (!newData) {
-        existingData[i][j] = "";
         continue;
       }
-
       const [newUser, newEmail, newTimes] = extractUserData(newData);
-      const cellContent = existingData[i][j].trim();
 
       if (cellContent) {
         const updatedContent = updateCellData(

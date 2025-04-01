@@ -1,6 +1,5 @@
 const SCHEDULE_API_URL =
-  "https://script.google.com/macros/s/AKfycbzPRg-axjCT4R-6tDV5N9PcJ3VIiHk0EOKobk9Pbj4qgayIDkWrFautirWm7dJo3ejpkA/exec";
-
+  "https://script.google.com/macros/s/AKfycbz7yAeSFp7U_j18HpyHvXOu2QBeEJMf2V8-uc2jOcBgcY7LaUAjUS9HkS3zauDH9FoHtQ/exec";
 const scheduleData = JSON.parse(sessionStorage.getItem("scheduleData"));
 const useInfo = JSON.parse(sessionStorage.getItem("user_info"));
 const { name, timezone, type } = useInfo;
