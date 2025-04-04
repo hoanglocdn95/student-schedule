@@ -1,6 +1,3 @@
-const ACCOUNT_API_URL =
-  "https://script.google.com/macros/s/AKfycbzMpNKtTa87nTMIcn2WA6EZpgAd9bKrfj7nY3kf0uFYRIeTTyUb2WNWGFmSldebj_k7/exec";
-
 document.addEventListener("DOMContentLoaded", async function () {
   const emailField = document.getElementById("email");
   const storedEmail = sessionStorage.getItem("user_email");
@@ -10,7 +7,6 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 
   const form = document.getElementById("userInfoForm");
-  const loadingOverlay = document.getElementById("loadingOverlay");
 
   form.addEventListener("submit", async function (event) {
     const userInStorage = JSON.parse(sessionStorage.getItem("user_info"));
@@ -54,7 +50,6 @@ document.addEventListener("DOMContentLoaded", async function () {
 });
 
 async function fetchTrainerData(email) {
-  const loadingOverlay = document.getElementById("loadingOverlay");
   loadingOverlay.style.display = "flex";
   try {
     const response = await fetch(
@@ -91,36 +86,4 @@ async function fetchTrainerData(email) {
   } catch (error) {
     console.error("Lỗi khi lấy dữ liệu:", error);
   }
-}
-
-document.addEventListener("DOMContentLoaded", function () {
-  if (!sessionStorage.getItem("user_email")) {
-    window.location.href = "index.html";
-  }
-});
-
-function logout() {
-  sessionStorage.clear();
-  window.location.href = "index.html";
-}
-
-function compareObjects(obj1, obj2) {
-  if (!obj1 && obj2) return false;
-
-  const keys1 = Object.keys(obj1);
-  const keys2 = Object.keys(obj2);
-
-  const commonKeys = keys1.filter((key) => keys2.includes(key));
-
-  return commonKeys.every((key) => {
-    let val1 = obj1[key];
-    let val2 = obj2[key];
-
-    if (typeof val1 === "number" || typeof val2 === "number") {
-      val1 = val1.toString().replace(".", ",");
-      val2 = val2.toString().replace(".", ",");
-    }
-
-    return val1 === val2;
-  });
 }

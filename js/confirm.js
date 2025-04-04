@@ -1,9 +1,5 @@
-const SCHEDULE_API_URL =
-  "https://script.google.com/macros/s/AKfycbz7yAeSFp7U_j18HpyHvXOu2QBeEJMf2V8-uc2jOcBgcY7LaUAjUS9HkS3zauDH9FoHtQ/exec";
 const scheduleData = JSON.parse(sessionStorage.getItem("scheduleData"));
-const useInfo = JSON.parse(sessionStorage.getItem("user_info"));
-const { name, timezone, type } = useInfo;
-const isTrainer = type === "trainer_info";
+const { name, timezone } = userInfo;
 
 if (isTrainer) {
   document.getElementById("navItem").innerHTML =
@@ -15,18 +11,12 @@ if (isTrainer) {
 const email = sessionStorage.getItem("user_email");
 const tbody = document.querySelector("#confirmTable tbody");
 
-const timeSlots = [
-  "Sáng (8:00 - 12:00)*",
-  "Chiều (12:00 - 17:00)",
-  "Tối (17:00 - 23:00)",
-];
-
 scheduleData.forEach((row, index) => {
   const tr = document.createElement("tr");
 
   // Thêm cột "Buổi"
   const timeSlotCell = document.createElement("td");
-  timeSlotCell.textContent = timeSlots[index];
+  timeSlotCell.textContent = TIME_SLOTS[index];
   timeSlotCell.style = "background: #07bcd0; font-weight: bold;";
   tr.appendChild(timeSlotCell);
 
@@ -48,7 +38,7 @@ function addUserInfoToSchedule(scheduleData) {
   return scheduleData.map((row) =>
     row.map((cell) => {
       if (cell.trim() !== "") {
-        return `${name} - ${timezone} - ${email} (${cell})`;
+        return `${name} - ${timezone} - ${email} (${mergeTimeRanges(cell)})`;
       }
       return cell;
     })
@@ -57,7 +47,6 @@ function addUserInfoToSchedule(scheduleData) {
 
 function submitToGoogleSheets() {
   const updatedSchedule = addUserInfoToSchedule(scheduleData);
-  const loadingOverlay = document.getElementById("loadingOverlay");
   loadingOverlay.style.display = "flex";
 
   fetch(SCHEDULE_API_URL, {
@@ -68,6 +57,7 @@ function submitToGoogleSheets() {
       scheduledData: updatedSchedule,
       timezone,
       type: isTrainer ? "handle_trainer_calendar" : "handle_student_calendar",
+      currentEmail: email,
     }),
   })
     .then((response) => response.json())
@@ -108,21 +98,6 @@ function generateHeaders() {
   }
 }
 
-// Gọi hàm khi trang tải xong
 window.onload = function () {
   generateHeaders();
 };
-
-document.addEventListener("DOMContentLoaded", function () {
-  if (!sessionStorage.getItem("user_email")) {
-    window.location.href = "index.html";
-  }
-  if (!sessionStorage.getItem("user_info")) {
-    window.location.href = isTrainer ? "trainer.html" : "user.html";
-  }
-});
-
-function logout() {
-  sessionStorage.clear();
-  window.location.href = "index.html";
-}

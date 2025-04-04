@@ -1,13 +1,9 @@
-const ACCOUNT_API_URL =
-  "https://script.google.com/macros/s/AKfycbzMpNKtTa87nTMIcn2WA6EZpgAd9bKrfj7nY3kf0uFYRIeTTyUb2WNWGFmSldebj_k7/exec";
-
 async function login() {
   const email = document.getElementById("emailInput").value.trim();
   const password = document.getElementById("passwordInput").value.trim();
   const userType = document.querySelector(
     'input[name="userType"]:checked'
   ).value;
-  const loadingOverlay = document.getElementById("loadingOverlay");
   const redirectPage = {
     student: "user.html",
     trainer: "trainer.html",

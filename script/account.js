@@ -7,23 +7,28 @@ const SHEET_INFO_NAME = {
 const USER_KEYS = {
   student: {
     1: "name",
-    3: "facebook",
-    4: "timezone",
-    5: "pteExamDate",
-    6: "examBooked",
-    7: "notes",
-    8: "minHoursPerWeek",
-    9: "maxHoursPerWeek",
-    10: "minHoursPerSession",
-    11: "maxHoursPerSession",
+    2: "email",
+    3: "pteClass",
+    4: "facebook",
+    5: "timezone",
+    6: "pteExamDate",
+    7: "examBooked",
+    8: "notes",
+    9: "minHoursPerWeek",
+    10: "maxHoursPerWeek",
+    11: "minHoursPerSession",
+    12: "maxHoursPerSession",
   },
   trainer: {
     1: "name",
+    2: "email",
     3: "facebook",
     4: "timezone",
+    6: "color",
   },
   admin: {
     1: "name",
+    2: "email",
     3: "facebook",
     4: "timezone",
   },
@@ -119,7 +124,6 @@ function getUser(email, userType) {
     SHEET_INFO_NAME[userType]
   );
 
-  LogToSheet("SHEET_INFO_NAME[userType]: " + SHEET_INFO_NAME[userType]);
   const data = sheet.getDataRange().getValues();
   const headers = data[0];
 
@@ -137,7 +141,6 @@ function getUser(email, userType) {
           }
         }
       });
-      LogToSheet("userData[]: " + userData);
 
       return ContentService.createTextOutput(
         JSON.stringify({ success: true, user: userData })
@@ -172,7 +175,7 @@ function getAllUsers() {
     trainer.push(tData);
   }
 
-  LogToSheet("Total users fetched: " + trainer.length);
+  // LogToSheet("Total users fetched: " + trainer.length);
 
   const studentSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
     SHEET_INFO_NAME.student
@@ -253,6 +256,7 @@ function handleUserInfoType(data, userType) {
     newRowData = [
       data.name,
       data.email,
+      data.pteClass,
       data.facebook,
       data.timezone,
       data.pteExamDate,
@@ -288,7 +292,7 @@ function handleLogin(requestData) {
   }
 
   const passwordColumn = {
-    student: 10,
+    student: 11,
     trainer: 3,
     admin: 3,
   };
@@ -297,7 +301,7 @@ function handleLogin(requestData) {
   const password = requestData.password;
 
   var lastRow = sheet.getLastRow();
-  var dataRange = sheet.getRange(3, 3, lastRow - 1, 11);
+  var dataRange = sheet.getRange(3, 3, lastRow - 1, 12);
   var userData = dataRange.getValues();
 
   for (let i = 0; i < userData.length; i++) {

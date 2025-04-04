@@ -1,6 +1,3 @@
-const ACCOUNT_API_URL =
-  "https://script.google.com/macros/s/AKfycbzMpNKtTa87nTMIcn2WA6EZpgAd9bKrfj7nY3kf0uFYRIeTTyUb2WNWGFmSldebj_k7/exec";
-
 document.addEventListener("DOMContentLoaded", async function () {
   const emailField = document.getElementById("email");
   const storedEmail = sessionStorage.getItem("user_email");
@@ -10,7 +7,6 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 
   const form = document.getElementById("userInfoForm");
-  const loadingOverlay = document.getElementById("loadingOverlay");
 
   form.addEventListener("submit", async function (event) {
     const userInStorage = JSON.parse(sessionStorage.getItem("user_info"));
@@ -50,6 +46,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       facebook: document.getElementById("facebook").value || "",
       timezone: document.getElementById("timezone").value || "",
       pteExamDate: document.getElementById("pteExamDate").value || "",
+      pteClass: document.getElementById("pteClass").value || "",
       examBooked: document.getElementById("examBooked").checked,
       notes: document.getElementById("notes").value || "",
       minHoursPerWeek: minHoursPerWeek || "",
@@ -86,7 +83,6 @@ document.addEventListener("DOMContentLoaded", async function () {
 });
 
 async function fetchUserData(email) {
-  const loadingOverlay = document.getElementById("loadingOverlay");
   loadingOverlay.style.display = "flex";
   try {
     const response = await fetch(
@@ -102,6 +98,7 @@ async function fetchUserData(email) {
       const {
         name,
         pteExamDate,
+        pteClass,
         notes,
         examBooked,
         timezone,
@@ -111,7 +108,6 @@ async function fetchUserData(email) {
         maxHoursPerSession,
         facebook,
       } = data.user;
-      // facebook: document.getElementById("facebook").value || "",
 
       if (pteExamDate) {
         const dateObj = new Date(pteExamDate);
@@ -125,6 +121,7 @@ async function fetchUserData(email) {
       }
 
       document.getElementById("name").value = name || "";
+      document.getElementById("pteClass").value = pteClass || "";
       document.getElementById("facebook").value = facebook || "";
       document.getElementById("timezone").value = timezone || "";
       document.getElementById("examBooked").checked = examBooked === "Đã book";
@@ -136,45 +133,9 @@ async function fetchUserData(email) {
       document.getElementById("maxHoursPerSession").value =
         maxHoursPerSession || "";
     }
-    loadingOverlay.style.display = "none";
   } catch (error) {
     console.error("Lỗi khi lấy dữ liệu:", error);
+  } finally {
+    loadingOverlay.style.display = "none";
   }
-}
-
-document.addEventListener("DOMContentLoaded", function () {
-  if (!sessionStorage.getItem("user_email")) {
-    window.location.href = "index.html";
-  }
-});
-
-function logout() {
-  sessionStorage.clear();
-  window.location.href = "index.html";
-}
-
-function compareObjects(obj1, obj2) {
-  if (!obj1 && obj2) return false;
-
-  const keys1 = Object.keys(obj1);
-  const keys2 = Object.keys(obj2);
-
-  const commonKeys = keys1.filter((key) => keys2.includes(key));
-
-  return commonKeys.every((key) => {
-    let val1 = obj1[key];
-    let val2 = obj2[key];
-
-    if (key === "pteExamDate") {
-      val1 = new Date(val1).toISOString().split("T")[0];
-      val2 = new Date(val2).toISOString().split("T")[0];
-    }
-
-    if (typeof val1 === "number" || typeof val2 === "number") {
-      val1 = val1.toString().replace(".", ",");
-      val2 = val2.toString().replace(".", ",");
-    }
-
-    return val1 === val2;
-  });
 }

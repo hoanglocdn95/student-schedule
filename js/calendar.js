@@ -1,13 +1,6 @@
-const SCHEDULE_API_URL =
-  "https://script.google.com/macros/s/AKfycbz7yAeSFp7U_j18HpyHvXOu2QBeEJMf2V8-uc2jOcBgcY7LaUAjUS9HkS3zauDH9FoHtQ/exec";
-const REMAIN_TIME_TO_EDIT = 5;
-
 let isAllowEdit = true;
 
 let currentScheduledData = Array.from({ length: 3 }, () => Array(7).fill(""));
-
-const useInfo = JSON.parse(sessionStorage.getItem("user_info"));
-const isTrainer = useInfo.type === "trainer_info";
 
 if (isTrainer) {
   document.getElementById("navItem").innerHTML =
@@ -214,7 +207,6 @@ function submitSchedule() {
 async function initTableData() {
   const scheduleData = JSON.parse(sessionStorage.getItem("scheduleData"));
   const email = sessionStorage.getItem("user_email");
-  const loadingOverlay = document.getElementById("loadingOverlay");
 
   loadingOverlay.style.display = "flex";
 
@@ -280,20 +272,6 @@ async function initTableData() {
     console.error("Lỗi khi lấy dữ liệu:", error);
     loadingOverlay.style.display = "none";
   }
-}
-
-document.addEventListener("DOMContentLoaded", function () {
-  if (!sessionStorage.getItem("user_email")) {
-    window.location.href = "index.html";
-  }
-  if (!sessionStorage.getItem("user_info")) {
-    window.location.href = isTrainer ? "trainer.html" : "user.html";
-  }
-});
-
-function logout() {
-  sessionStorage.clear();
-  window.location.href = "index.html";
 }
 
 const defineEditingPermission = () => {

@@ -61,7 +61,7 @@ function sendSuccessResponse() {
   return sendJsonResponse({ result: "success", status: "ok" });
 }
 
-function logToSheet(message) {
+function LogToSheet(message) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var logSheet = ss.getSheetByName("Logs") || ss.insertSheet("Logs");
   logSheet.appendRow([new Date(), message]).setWrap(true);
@@ -71,7 +71,6 @@ function logToSheet(message) {
 
 function doPost(e) {
   try {
-    // ✅ Xử lý request OPTIONS (Preflight CORS)
     if (e.parameter && e.parameter.options === "true") {
       return sendCorsResponse();
     }
@@ -182,7 +181,7 @@ function updateCellData(cellContent, newUser, newEmail, newTimes) {
 }
 
 function handleCalendarType(data, userType) {
-  const { scheduledData, timezone } = data;
+  const { scheduledData, currentEmail } = data;
 
   var currentDate = new Date();
   let dayOfWeek = currentDate.getDay();
@@ -209,7 +208,7 @@ function handleCalendarType(data, userType) {
     ss.getSheetByName(sheetName) ||
     createSheetWithHeaders(ss, sheetName, monday, sunday, userType);
 
-  generateSheetBody(4, 2, scheduledData, sheet);
+  generateSheetBody(4, 2, scheduledData, sheet, currentEmail);
 
   return sendSuccessResponse();
 }
@@ -302,7 +301,15 @@ function createSheetWithHeaders(ss, sheetName, monday, sunday, userType) {
   return sheet;
 }
 
-function generateSheetBody(startRow, startColumn, sheetData, currentSheet) {
+function generateSheetBody(
+  startRow,
+  startColumn,
+  sheetData,
+  currentSheet,
+  currentEmail
+) {
+  if (!sheetData.length || !sheetData[0]?.length) return;
+
   const numRows = sheetData.length;
   const numCols = sheetData[0].length;
 
@@ -312,22 +319,36 @@ function generateSheetBody(startRow, startColumn, sheetData, currentSheet) {
 
   for (let i = 0; i < numRows; i++) {
     for (let j = 0; j < numCols; j++) {
-      const newData = sheetData[i][j].trim();
-      const cellContent = existingData[i][j].trim();
+      const newData = sheetData[i][j] ? sheetData[i][j].trim() : "";
+      const cellContent = existingData[i][j] ? existingData[i][j].trim() : "";
 
       if (!newData) {
+        LogToSheet("newData: " + newData);
+        LogToSheet("currentEmail: " + currentEmail);
+        if (currentEmail) {
+          LogToSheet("cellContent: " + cellContent);
+          const updatedLines = cellContent
+            .split("\n")
+            .filter((line) => !line.includes(currentEmail))
+            .join("\n");
+          LogToSheet("updatedLines: " + updatedLines);
+
+          existingData[i][j] = updatedLines.trim() || "";
+        }
+
         continue;
       }
-      const [newUser, newEmail, newTimes] = extractUserData(newData);
+
+      const extractedData = extractUserData(newData) || [];
+      const [newUser = "", newEmail = "", newTimes = ""] = extractedData;
 
       if (cellContent) {
-        const updatedContent = updateCellData(
+        existingData[i][j] = updateCellData(
           cellContent,
           newUser,
           newEmail,
           newTimes
         );
-        existingData[i][j] = updatedContent;
       } else {
         existingData[i][j] = `${newUser} - ${newEmail} (${newTimes})`;
       }
@@ -339,9 +360,11 @@ function generateSheetBody(startRow, startColumn, sheetData, currentSheet) {
     .setValues(existingData)
     .setWrap(true);
 
-  // 🔹 Tự động điều chỉnh chiều cao hàng
-  currentSheet.autoResizeRows(startRow, numRows);
-
-  // 🔹 Nếu cần, thu nhỏ cột để ép nội dung xuống dòng
-  currentSheet.autoResizeColumns(startColumn, numCols);
+  // Sử dụng cách resize tương thích với Google Apps Script
+  for (let r = startRow; r < startRow + numRows; r++) {
+    currentSheet.autoResizeRow(r);
+  }
+  for (let c = startColumn; c < startColumn + numCols; c++) {
+    currentSheet.autoResizeColumn(c);
+  }
 }
