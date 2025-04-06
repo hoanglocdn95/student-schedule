@@ -65,7 +65,7 @@ function submitToGoogleSheets() {
       loadingOverlay.style.display = "none";
       M.toast({ html: "Dữ liệu đã được lưu!", classes: "green darken-1" });
       setTimeout(() => {
-        window.location.href = "thanks.html";
+        // window.location.href = "thanks.html";
       }, 1000);
     })
     .catch((error) => {

@@ -64,7 +64,7 @@ function sendSuccessResponse() {
 function LogToSheet(message) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var logSheet = ss.getSheetByName("Logs") || ss.insertSheet("Logs");
-  logSheet.appendRow([new Date(), message]).setWrap(true);
+  logSheet.appendRow([new Date(), message]);
 }
 
 // ===============
@@ -320,21 +320,15 @@ function generateSheetBody(
   for (let i = 0; i < numRows; i++) {
     for (let j = 0; j < numCols; j++) {
       const newData = sheetData[i][j] ? sheetData[i][j].trim() : "";
-      const cellContent = existingData[i][j] ? existingData[i][j].trim() : "";
+      let cellContent = existingData[i][j] ? existingData[i][j].trim() : "";
 
       if (!newData) {
-        LogToSheet("newData: " + newData);
-        LogToSheet("currentEmail: " + currentEmail);
-        if (currentEmail) {
-          LogToSheet("cellContent: " + cellContent);
-          const updatedLines = cellContent
-            .split("\n")
-            .filter((line) => !line.includes(currentEmail))
-            .join("\n");
-          LogToSheet("updatedLines: " + updatedLines);
+        const updatedLines = cellContent
+          .split("\n")
+          .filter((line) => !line.includes(currentEmail))
+          .join("\n");
 
-          existingData[i][j] = updatedLines.trim() || "";
-        }
+        existingData[i][j] = updatedLines.trim() || "";
 
         continue;
       }
@@ -355,16 +349,29 @@ function generateSheetBody(
     }
   }
 
+  // Cập nhật lại Sheet
   currentSheet
     .getRange(startRow, startColumn, numRows, numCols)
     .setValues(existingData)
     .setWrap(true);
 
-  // Sử dụng cách resize tương thích với Google Apps Script
+  // Resize hàng & cột
   for (let r = startRow; r < startRow + numRows; r++) {
     currentSheet.autoResizeRow(r);
   }
   for (let c = startColumn; c < startColumn + numCols; c++) {
     currentSheet.autoResizeColumn(c);
   }
+}
+
+function getScheduleOfStudentTrainer(isNextWeek = false) {
+  var currentDate = new Date();
+
+  var monday = new Date(currentDate);
+  monday.setDate(
+    currentDate.getDate() - (isNextWeek ? 6 : currentDate.getDay() - 1)
+  );
+
+  var sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
 }

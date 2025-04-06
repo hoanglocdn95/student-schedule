@@ -1,7 +1,7 @@
 const ACCOUNT_API_URL =
   "https://script.google.com/macros/s/AKfycbxa7-dhPgo48Q3eVKnQjQNKI8oi4ykDfnTzi9hQDSfhGk2SrMBimc1yagzxXLULNs7tYQ/exec";
 const SCHEDULE_API_URL =
-  "https://script.google.com/macros/s/AKfycbx1WEfIP9WNEQWC-KwyX0fP7urSBggrqvEWAIdsazhInXlA3Ey5cHmythTHbDskFcDp7Q/exec";
+  "https://script.google.com/macros/s/AKfycbwtILUETUz9y88i18G0vVdSuS0WtYZnq4P-oP7C3HrtJi_v2SoOU5fy3khec_kL2p38xg/exec";
 
 const REMAIN_TIME_TO_EDIT = 5;
 const userInfo = JSON.parse(sessionStorage.getItem("user_info"));
