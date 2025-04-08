@@ -85,3 +85,7 @@ function mergeTimeRanges(timeRanges) {
     })
     .join(", ");
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+  loadingOverlay = document.getElementById("loadingOverlay");
+});
