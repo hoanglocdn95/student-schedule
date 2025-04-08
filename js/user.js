@@ -139,3 +139,11 @@ async function fetchUserData(email) {
     loadingOverlay.style.display = "none";
   }
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+  loadingOverlay = document.getElementById("loadingOverlay");
+
+  if (!sessionStorage.getItem("user_email")) {
+    window.location.href = "index.html";
+  }
+});

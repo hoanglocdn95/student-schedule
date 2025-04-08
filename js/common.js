@@ -14,25 +14,6 @@ const TIME_SLOTS = [
   "Tối (17:00 - 23:00)",
 ];
 
-document.addEventListener("DOMContentLoaded", function () {
-  loadingOverlay = document.getElementById("loadingOverlay");
-
-  if (
-    !sessionStorage.getItem("user_email") &&
-    window.location.pathname !== "/index.html"
-  ) {
-    window.location.href = "index.html";
-  }
-  if (
-    !userInfo &&
-    window.location.pathname !== "/index.html" &&
-    window.location.pathname !== "/user.html" &&
-    window.location.pathname !== "/trainer.html"
-  ) {
-    window.location.href = isTrainer ? "trainer.html" : "user.html";
-  }
-});
-
 function logout() {
   sessionStorage.clear();
   window.location.href = "index.html";

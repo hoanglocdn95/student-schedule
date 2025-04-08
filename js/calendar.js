@@ -312,3 +312,14 @@ const defineEditingPermission = () => {
     ).toLocaleDateString("vi-VN")}</b>`;
   }
 };
+
+document.addEventListener("DOMContentLoaded", function () {
+  loadingOverlay = document.getElementById("loadingOverlay");
+
+  if (!sessionStorage.getItem("user_email")) {
+    window.location.href = "index.html";
+  }
+  if (!userInfo) {
+    window.location.href = isTrainer ? "trainer.html" : "user.html";
+  }
+});
