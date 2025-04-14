@@ -1,4 +1,6 @@
-document.addEventListener("DOMContentLoaded", async function () {
+document.addEventListener("DOMContentLoaded", saveUserInfo);
+
+async function saveUserInfo() {
   const emailField = document.getElementById("email");
   const storedEmail = sessionStorage.getItem("user_email");
   if (storedEmail) {
@@ -10,7 +12,6 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   form.addEventListener("submit", async function (event) {
     const userInStorage = JSON.parse(sessionStorage.getItem("user_info"));
-    console.log(" userInStorage:", userInStorage);
 
     event.preventDefault();
 
@@ -38,6 +39,8 @@ document.addEventListener("DOMContentLoaded", async function () {
       });
       return;
     }
+
+    const pteExamDate = document.getElementById("pteExamDate").value;
 
     const userData = {
       type: "user_info",
@@ -80,7 +83,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         console.error("Lỗi khi lưu dữ liệu:", error);
       });
   });
-});
+}
 
 async function fetchUserData(email) {
   loadingOverlay.style.display = "flex";

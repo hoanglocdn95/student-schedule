@@ -70,6 +70,7 @@ function generateTableBody() {
           textarea.style.cursor = "not-allowed";
         }
 
+        textarea.textContent = currentScheduledData[index][i - 1];
         tdInput.appendChild(textarea);
       } else {
         tdInput.textContent = currentScheduledData[index][i - 1];
@@ -231,7 +232,27 @@ async function initTableData() {
     loadingOverlay.style.display = "none";
     const data = res.data;
 
-    if ((!data || !Array.isArray(data) || data.length === 0) && !scheduleData) {
+    let dataTimes = "";
+
+    if (data && Array.isArray(data) && data.length > 0) {
+      dataTimes = data
+        .map((row) =>
+          row
+            .map((cell) => {
+              return cell
+                .split("\n")
+                .map((entry) => entry.trim())
+                .filter((entry) => entry.includes(`- ${email} (`))
+                .map((entry) => entry.match(/\(([^)]+)\)/g)[1].slice(1, -1))
+                .filter(Boolean)
+                .join("");
+            })
+            .join("")
+        )
+        .join("");
+    }
+
+    if (!dataTimes && !scheduleData) {
       console.error("Không có dữ liệu hoặc dữ liệu không hợp lệ.");
       return;
     }
@@ -260,10 +281,7 @@ async function initTableData() {
       }
     }
 
-    if (
-      !scheduleData &&
-      currentScheduledData.map((cs) => cs.join("")).join("") === ""
-    ) {
+    if (!dataTimes || isTrainer) {
       isAllowEdit = true;
     } else {
       isAllowEdit = false;
@@ -281,15 +299,6 @@ const defineEditingPermission = () => {
 
   if (isAllowEdit) {
     document.getElementById("register-calendar-guide").style.display = "block";
-    // const array = Array.from({ length: 3 }, () => Array(7).fill(""));
-
-    // const tableRows = document.querySelectorAll("tbody tr");
-    // for (let i = 0; i < array.length; i++) {
-    //   for (let j = 0; j < array[i].length; j++) {
-    //     tableRows[i].cells[j + 1].innerHTML = "<textarea></textarea>";
-
-    //   }
-    // }
   } else {
     document.getElementById("registered-calendar").style.display = "block";
 

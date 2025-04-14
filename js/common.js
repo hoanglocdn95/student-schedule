@@ -31,7 +31,7 @@ function compareObjects(obj1, obj2) {
     let val1 = obj1[key];
     let val2 = obj2[key];
 
-    if (key === "pteExamDate") {
+    if (key === "pteExamDate" && val1 && val2) {
       val1 = new Date(val1).toISOString().split("T")[0];
       val2 = new Date(val2).toISOString().split("T")[0];
     }
