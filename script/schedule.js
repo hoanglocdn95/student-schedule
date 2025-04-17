@@ -91,13 +91,10 @@ function doPost(e) {
 
 function doGet(e) {
   const type = e.parameter.type;
+  const sheetName = e.parameter.sheetName;
 
   if (type === "get_calendar") {
-    return getCalendar("student");
-  }
-
-  if (type === "get_trainer_calendar") {
-    return getCalendar("trainer");
+    return getCalendar(sheetName);
   }
 
   return ContentService.createTextOutput(
@@ -105,79 +102,65 @@ function doGet(e) {
   ).setMimeType(ContentService.MimeType.JSON);
 }
 
-function getCalendar(userType) {
-  var currentDate = new Date();
+function getCalendar(sheetName) {
+  try {
+    const sheet =
+      SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+    if (!sheet) {
+      return ContentService.createTextOutput(
+        JSON.stringify({ success: false, message: "Sheet not found" })
+      ).setMimeType(ContentService.MimeType.JSON);
+    }
 
-  var monday = new Date(currentDate);
-  monday.setDate(
-    currentDate.getDate() -
-      (currentDate.getDay() === 0 ? 6 : currentDate.getDay() - 1)
-  );
+    const startRow = 4;
+    const startColumn = 2;
 
-  var sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
+    const lastRow = sheet.getLastRow();
+    const lastCol = sheet.getLastColumn();
 
-  var sheetName = `${userType.toUpperCase()}:${formatDate(
-    monday
-  )} - ${formatDate(sunday)}`;
+    if (lastRow < startRow || lastCol < startColumn) {
+      return ContentService.createTextOutput(
+        JSON.stringify({ success: false, message: "Invalid sheet size" })
+      ).setMimeType(ContentService.MimeType.JSON);
+    }
 
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+    const numRows = lastRow - (startRow - 1);
+    const numCols = lastCol - (startColumn - 1);
 
-  if (!sheet) {
+    const data = sheet
+      .getRange(startRow, startColumn, numRows, numCols)
+      .getValues();
+
     return ContentService.createTextOutput(
-      JSON.stringify({ success: false, message: "Sheet not found" })
+      JSON.stringify({ success: true, data })
+    ).setMimeType(ContentService.MimeType.JSON);
+  } catch (error) {
+    return ContentService.createTextOutput(
+      JSON.stringify({ success: false, message: error.message })
     ).setMimeType(ContentService.MimeType.JSON);
   }
-
-  var startRow = 4;
-  var startColumn = 2;
-
-  var data = sheet.getDataRange().getValues();
-  if (data && (data.length < startRow || data[0].length < startColumn)) {
-    return ContentService.createTextOutput(
-      JSON.stringify({ success: false, message: "Invalid sheet structure" })
-    ).setMimeType(ContentService.MimeType.JSON);
-  }
-
-  var numRows = data.length - (startRow - 1); // Giới hạn số dòng hợp lệ
-  var numCols = data[0].length - (startColumn - 1);
-
-  var existingData = sheet
-    .getRange(startRow, startColumn, numRows, numCols)
-    .getValues();
-
-  return ContentService.createTextOutput(
-    JSON.stringify({ success: true, data: existingData })
-  ).setMimeType(ContentService.MimeType.JSON);
 }
 
 function extractUserData(dataString) {
-  var match = dataString.match(/^(.+?) - (.+?) \((.+)\)$/);
+  var match = dataString.match(/^(.+?) - (.+?) - (.+?) \((.+)\)$/);
   if (match) {
-    return [match[1].trim(), match[2].trim(), match[3].trim()];
+    const name = match[1].trim();
+    const timezone = match[2].trim();
+    const email = match[3].trim();
+    const times = match[4].trim();
+    return {
+      name,
+      timezone,
+      email,
+      times,
+    };
   }
-  return ["Unknown", "Unknown", ""];
-}
-
-function updateCellData(cellContent, newUser, newEmail, newTimes) {
-  var lines = cellContent.split("\n");
-  var updated = false;
-
-  var newLines = lines.map((line) => {
-    var [existingUser, existingEmail] = extractUserData(line);
-
-    if (existingEmail === newEmail) {
-      updated = true;
-      return `${existingUser} - ${existingEmail} (${newTimes})`;
-    }
-    return line;
-  });
-
-  if (!updated) {
-    newLines.push(`${newUser} - ${newEmail} (${newTimes})`);
-  }
-
-  return newLines.join("\n");
+  return {
+    name: "Unknown",
+    timezone: "Unknown",
+    email: "Unknown",
+    times: "",
+  };
 }
 
 function handleCalendarType(data, userType) {
@@ -301,6 +284,32 @@ function createSheetWithHeaders(ss, sheetName, monday, sunday, userType) {
   return sheet;
 }
 
+function updateCellData(cellContent, newUser, newTimezone, newEmail, newTimes) {
+  var lines = cellContent.split("\n");
+  var updated = false;
+
+  var newLines = lines.map((line) => {
+    const {
+      name: existingUser,
+      timezone: existingTimezone,
+      email: existingEmail,
+      times: existingTimes,
+    } = extractUserData(line);
+
+    if (existingEmail && newEmail && existingEmail === newEmail) {
+      updated = true;
+      return `${newUser} - ${newTimezone} - ${existingEmail} (${newTimes})`;
+    }
+    return line;
+  });
+
+  if (!updated) {
+    newLines.push(`${newUser} - ${newTimezone} - ${newEmail} (${newTimes})`);
+  }
+
+  return newLines.join("\n");
+}
+
 function generateSheetBody(
   startRow,
   startColumn,
@@ -322,6 +331,8 @@ function generateSheetBody(
       const newData = sheetData[i][j] ? sheetData[i][j].trim() : "";
       let cellContent = existingData[i][j] ? existingData[i][j].trim() : "";
 
+      LogToSheet("~ cellContent: ", cellContent);
+
       if (!newData) {
         const updatedLines = cellContent
           .split("\n")
@@ -333,18 +344,29 @@ function generateSheetBody(
         continue;
       }
 
-      const extractedData = extractUserData(newData) || [];
-      const [newUser = "", newEmail = "", newTimes = ""] = extractedData;
+      const {
+        name: newUser,
+        timezone: newTimezone,
+        email: newEmail,
+        times: newTimes,
+      } = extractUserData(newData) || {};
+
+      LogToSheet(
+        `newUser: ${newUser} ~ newTimezone: ${newTimezone} newEmail: ${newEmail} newTimes: ${newTimes}`
+      );
 
       if (cellContent) {
         existingData[i][j] = updateCellData(
           cellContent,
           newUser,
+          newTimezone,
           newEmail,
           newTimes
         );
       } else {
-        existingData[i][j] = `${newUser} - ${newEmail} (${newTimes})`;
+        existingData[i][
+          j
+        ] = `${newUser} - ${newTimezone} - ${newEmail} (${newTimes})`;
       }
     }
   }
@@ -362,16 +384,4 @@ function generateSheetBody(
   for (let c = startColumn; c < startColumn + numCols; c++) {
     currentSheet.autoResizeColumn(c);
   }
-}
-
-function getScheduleOfStudentTrainer(isNextWeek = false) {
-  var currentDate = new Date();
-
-  var monday = new Date(currentDate);
-  monday.setDate(
-    currentDate.getDate() - (isNextWeek ? 6 : currentDate.getDay() - 1)
-  );
-
-  var sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
 }

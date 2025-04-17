@@ -73,31 +73,6 @@ function submitToGoogleSheets() {
     });
 }
 
-function generateHeaders() {
-  let today = new Date();
-  let dayOfWeek = today.getDay();
-  let monday = new Date(today);
-  monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
-
-  if (dayOfWeek === 6 || dayOfWeek === 0) {
-    monday.setDate(monday.getDate() + 7);
-  }
-
-  let sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6); // Tìm ngày Chủ Nhật
-
-  let headerRow = document.getElementById("table-header");
-
-  for (let d = new Date(monday); d <= sunday; d.setDate(d.getDate() + 1)) {
-    let th = document.createElement("th");
-    th.textContent = `${
-      d.getDay() === 0 ? "Chủ Nhật" : `Thứ ${d.getDay() + 1}`
-    } (${d.toLocaleDateString("vi-VN")})`;
-    th.className = "th-day";
-    headerRow.appendChild(th);
-  }
-}
-
 window.onload = function () {
   generateHeaders();
 };

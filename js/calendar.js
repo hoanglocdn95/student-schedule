@@ -10,28 +10,27 @@ if (isTrainer) {
 }
 
 function generateHeaders() {
-  let today = new Date();
-  let dayOfWeek = today.getDay();
-  let monday = new Date(today);
-  monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
-
-  if (dayOfWeek === 6 || dayOfWeek === 0) {
-    monday.setDate(monday.getDate() + 7);
-  }
-
-  let sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6); // Tìm ngày Chủ Nhật
+  const days = [
+    "Thứ 2",
+    "Thứ 3",
+    "Thứ 4",
+    "Thứ 5",
+    "Thứ 6",
+    "Thứ 7",
+    "Chủ nhật",
+  ];
 
   let headerRow = document.getElementById("table-header");
 
-  for (let d = new Date(monday); d <= sunday; d.setDate(d.getDate() + 1)) {
+  weekArray.forEach((date, i) => {
     let th = document.createElement("th");
-    th.textContent = `${
-      d.getDay() === 0 ? "Chủ Nhật" : `Thứ ${d.getDay() + 1}`
-    } (${d.toLocaleDateString("vi-VN")})`;
+
+    const dayText = `${days[i]} (${date})`;
+
+    th.textContent = dayText;
     th.className = "th-day";
     headerRow.appendChild(th);
-  }
+  });
 }
 
 function generateTableBody() {
@@ -218,9 +217,9 @@ async function initTableData() {
 
   try {
     let response = await fetch(
-      `${SCHEDULE_API_URL}?type=${
-        isTrainer ? "get_trainer_calendar" : "get_calendar"
-      }`,
+      `${SCHEDULE_API_URL}?type=get_calendar&sheetName=${getSheetNames(
+        isTrainer ? SHEET_TYPE.TRAINER : SHEET_TYPE.STUDENT
+      )}`,
       {
         redirect: "follow",
         method: "GET",
@@ -231,6 +230,7 @@ async function initTableData() {
     const res = await response.json();
     loadingOverlay.style.display = "none";
     const data = res.data;
+    console.log(" initTableData ~ data:", data);
 
     let dataTimes = "";
 
@@ -243,7 +243,13 @@ async function initTableData() {
                 .split("\n")
                 .map((entry) => entry.trim())
                 .filter((entry) => entry.includes(`- ${email} (`))
-                .map((entry) => entry.match(/\(([^)]+)\)/g)[1].slice(1, -1))
+                .map((entry) => {
+                  console.log(" .map ~ entry:", entry);
+
+                  const res = entry.match(/\(([^)]+)\)/g)[1].slice(1, -1);
+                  console.log(" .map ~ res:", res);
+                  return res;
+                })
                 .filter(Boolean)
                 .join("");
             })
@@ -251,6 +257,8 @@ async function initTableData() {
         )
         .join("");
     }
+
+    console.log(" initTableData ~ dataTimes:", dataTimes);
 
     if (!dataTimes && !scheduleData) {
       console.error("Không có dữ liệu hoặc dữ liệu không hợp lệ.");
@@ -266,6 +274,7 @@ async function initTableData() {
           let cellData = dataTable[i][j].trim();
 
           if (!cellData) continue;
+          console.log(" initTableData ~ cellData:", cellData);
 
           let matchingTimes = cellData
             .split("\n")
@@ -302,23 +311,9 @@ const defineEditingPermission = () => {
   } else {
     document.getElementById("registered-calendar").style.display = "block";
 
-    let today = new Date();
-    let dayOfWeek = today.getDay();
-    let monday = new Date(today);
-    monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
-
-    if (dayOfWeek === 6 || dayOfWeek === 0) {
-      monday.setDate(monday.getDate() + 7);
-    }
-
-    let sunday = new Date(monday);
-    sunday.setDate(monday.getDate() + 6);
-
-    document.getElementById("range-time").innerHTML = `Từ <b>${new Date(
-      monday
-    ).toLocaleDateString("vi-VN")}</b> đến <b>${new Date(
-      sunday
-    ).toLocaleDateString("vi-VN")}</b>`;
+    document.getElementById(
+      "range-time"
+    ).innerHTML = `Từ <b>${fromDate}</b> đến <b>${toDate}</b>`;
   }
 };
 
