@@ -36,9 +36,9 @@ function generateHeaders() {
 function generateTableBody() {
   let tbody = document.getElementById("table-body");
   let periods = [
-    { label: "Sáng (8:00 - 12:00)*", start: 8, end: 12 },
+    { label: "Sáng (7:00 - 12:00)*", start: 7, end: 12 },
     { label: "Chiều (12:00 - 17:00)", start: 12, end: 17 },
-    { label: "Tối (17:00 - 23:00)", start: 17, end: 23 },
+    { label: "Tối (17:00 - 24:00)", start: 17, end: 24 },
   ];
 
   let now = new Date();
@@ -230,7 +230,6 @@ async function initTableData() {
     const res = await response.json();
     loadingOverlay.style.display = "none";
     const data = res.data;
-    console.log(" initTableData ~ data:", data);
 
     let dataTimes = "";
 
@@ -244,10 +243,7 @@ async function initTableData() {
                 .map((entry) => entry.trim())
                 .filter((entry) => entry.includes(`- ${email} (`))
                 .map((entry) => {
-                  console.log(" .map ~ entry:", entry);
-
                   const res = entry.match(/\(([^)]+)\)/g)[1].slice(1, -1);
-                  console.log(" .map ~ res:", res);
                   return res;
                 })
                 .filter(Boolean)
@@ -257,8 +253,6 @@ async function initTableData() {
         )
         .join("");
     }
-
-    console.log(" initTableData ~ dataTimes:", dataTimes);
 
     if (!dataTimes && !scheduleData) {
       console.error("Không có dữ liệu hoặc dữ liệu không hợp lệ.");
@@ -274,7 +268,6 @@ async function initTableData() {
           let cellData = dataTable[i][j].trim();
 
           if (!cellData) continue;
-          console.log(" initTableData ~ cellData:", cellData);
 
           let matchingTimes = cellData
             .split("\n")

@@ -89,7 +89,6 @@ function compareObjects(obj1, obj2) {
 }
 
 function mergeTimeRanges(timeRanges) {
-  console.log(" mergeTimeRanges ~ timeRanges:", timeRanges);
   const ranges = timeRanges.split(", ").map((range) => {
     const [start, end] = range.split("-").map((time) => {
       const [hh, mm] = time.split(":").map(Number);
