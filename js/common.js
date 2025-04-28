@@ -54,7 +54,7 @@ let loadingOverlay = null;
 const TIME_SLOTS = [
   "Sáng (8:00 - 12:00)*",
   "Chiều (12:00 - 17:00)",
-  "Tối (17:00 - 23:00)",
+  "Tối (17:00 - 24:00)",
 ];
 
 function logout() {

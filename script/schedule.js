@@ -252,7 +252,7 @@ function createSheetWithHeaders(ss, sheetName, monday, sunday, userType) {
   var periods = [
     "Sáng (8:00 - 12:00)*",
     "Chiều (12:00 - 17:00)",
-    "Tối (17:00 - 23:00)",
+    "Tối (17:00 - 24:00)",
   ];
   for (var i = 0; i < periods.length; i++) {
     sheet.getRange(i + 4, 1).setValue(periods[i]);

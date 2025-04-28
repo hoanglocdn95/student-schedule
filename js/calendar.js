@@ -121,13 +121,13 @@ function validateScheduleData() {
           }
 
           // Chuyển đổi giờ phút thành số phút để so sánh
-          let startHour = parseInt(match[1], 10);
-          let startMinute = parseInt(match[2], 10);
-          let endHour = parseInt(match[3], 10);
-          let endMinute = parseInt(match[4], 10);
+          const startHour = parseInt(match[1], 10);
+          const startMinute = parseInt(match[2], 10);
+          const endHour = parseInt(match[3], 10);
+          const endMinute = parseInt(match[4], 10);
 
-          let startTime = startHour * 60 + startMinute;
-          let endTime = endHour * 60 + endMinute;
+          const startTime = startHour * 60 + startMinute;
+          const endTime = endHour * 60 + endMinute;
 
           if (startTime >= endTime) {
             errors.push(
@@ -142,27 +142,25 @@ function validateScheduleData() {
           // Xác định khoảng thời gian hợp lệ theo rowIndex
           let minTime, maxTime;
           if (rowIndex === 0) {
-            minTime = 8 * 60; // 8:00
+            minTime = 7 * 60; // 07:00
             maxTime = 12 * 60; // 12:00
           } else if (rowIndex === 1) {
             minTime = 12 * 60; // 12:00
             maxTime = 17 * 60; // 17:00
           } else if (rowIndex === 2) {
             minTime = 17 * 60; // 17:00
-            maxTime = 23 * 60; // 23:00
+            maxTime = 24 * 60; // 24:00
           } else {
-            continue; // Bỏ qua các dòng không được quy định
+            continue; // Bỏ qua các dòng khác
           }
 
           if (startTime < minTime || endTime > maxTime) {
             errors.push(
               `Lỗi tại hàng ${rowIndex + 1}, cột ${
                 colIndex + 1
-              }: Thời gian "${value}" không nằm trong khoảng cho phép (${Math.floor(
-                minTime / 60
-              )}:${String(minTime % 60).padStart(2, "0")} - ${Math.floor(
-                maxTime / 60
-              )}:${String(maxTime % 60).padStart(2, "0")}).`
+              }: Thời gian "${value}" không nằm trong khoảng cho phép (${formatMinutes(
+                minTime
+              )} - ${formatMinutes(maxTime)}).`
             );
             textarea.classList.add("error");
           }
@@ -173,7 +171,6 @@ function validateScheduleData() {
 
   if (errors.length > 0) {
     errorContainer.textContent = errors.join("\n");
-    // M.toast({ html: errorContainer, classes: "red darken-1" });
     return false;
   }
 
@@ -183,6 +180,15 @@ function validateScheduleData() {
   }
 
   return true;
+}
+
+// Hàm phụ để format phút thành dạng HH:mm
+function formatMinutes(totalMinutes) {
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return `${hours.toString().padStart(2, "0")}:${minutes
+    .toString()
+    .padStart(2, "0")}`;
 }
 
 function submitSchedule() {
