@@ -1,7 +1,7 @@
 const ACCOUNT_API_URL =
   "https://script.google.com/macros/s/AKfycbxa7-dhPgo48Q3eVKnQjQNKI8oi4ykDfnTzi9hQDSfhGk2SrMBimc1yagzxXLULNs7tYQ/exec";
 const SCHEDULE_API_URL =
-  "https://script.google.com/macros/s/AKfycbxpKKS1fHni-dmEpXyGLCreE43qBxJpPiKXHJONLXn2N0vLGwjGNhzbY_ODBIolR4ePvA/exec";
+  "https://script.google.com/macros/s/AKfycbx-9-NGKQT1BPE30EoY_s2bauw1OWfIMxX_cGMBPGDBPCvBPwLB4FfQE5yzjEJ3cqltEw/exec";
 
 const SHEET_TYPE = {
   TRAINER: "TRAINER",

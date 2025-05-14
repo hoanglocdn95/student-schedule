@@ -75,7 +75,7 @@ function doPost(e) {
       return sendCorsResponse();
     }
 
-    var data = JSON.parse(e.postData.contents);
+    const data = JSON.parse(e.postData.contents);
 
     if (data.type === "handle_student_calendar") {
       return handleCalendarType(data, "student");
@@ -164,27 +164,27 @@ function extractUserData(dataString) {
 }
 
 function handleCalendarType(data, userType) {
-  const { scheduledData, currentEmail } = data;
+  const { scheduledData, currentEmail, sheetName } = data;
 
-  var currentDate = new Date();
-  let dayOfWeek = currentDate.getDay();
-  var monday = new Date(currentDate);
-  monday.setDate(
-    currentDate.getDate() -
-      (currentDate.getDay() === 0 ? 6 : currentDate.getDay() - 1)
-  );
-
-  if (dayOfWeek === 6 || dayOfWeek === 0) {
-    monday.setDate(monday.getDate() + 7);
+  if (!sheetName) {
+    return ContentService.createTextOutput(
+      JSON.stringify({ success: false, message: "Sheet name is required" })
+    ).setMimeType(ContentService.MimeType.JSON);
   }
+
+  const dates = extractDatesFromSheetName(sheetName);
+
+  if (!dates) {
+    return ContentService.createTextOutput(
+      JSON.stringify({ success: false, message: "Invalid sheet name" })
+    ).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  const monday = new Date(dates.startDate);
+  monday.setDate(monday.getDate() - monday.getDay());
 
   var sunday = new Date(monday);
   sunday.setDate(monday.getDate() + 6);
-
-  const fromTime = formatDate(monday);
-  const toTime = formatDate(sunday);
-
-  var sheetName = `${userType.toUpperCase()}:${fromTime} - ${toTime}`;
 
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet =
@@ -384,4 +384,24 @@ function generateSheetBody(
   for (let c = startColumn; c < startColumn + numCols; c++) {
     currentSheet.autoResizeColumn(c);
   }
+}
+
+function extractDatesFromSheetName(sheetName) {
+  const dateMatch = sheetName.match(
+    /(\d{2}\/\d{2}\/\d{4})\s*-\s*(\d{2}\/\d{2}\/\d{4})/
+  );
+
+  if (!dateMatch) {
+    return null;
+  }
+
+  const [_, startDateStr, endDateStr] = dateMatch;
+
+  const startDate = new Date(startDateStr.split("/").reverse().join("-"));
+  const endDate = new Date(endDateStr.split("/").reverse().join("-"));
+
+  return {
+    startDate,
+    endDate,
+  };
 }

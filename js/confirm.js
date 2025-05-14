@@ -58,6 +58,9 @@ function submitToGoogleSheets() {
       timezone,
       type: isTrainer ? "handle_trainer_calendar" : "handle_student_calendar",
       currentEmail: email,
+      sheetName: getSheetNames(
+        isTrainer ? SHEET_TYPE.TRAINER : SHEET_TYPE.STUDENT
+      ),
     }),
   })
     .then((response) => response.json())
